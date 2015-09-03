@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'bulk/processor/version'
+require 'bulk_processor/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'bulk-processor'
-  spec.version       = Bulk::Processor::VERSION
+  spec.version       = BulkProcessor::VERSION
   spec.authors       = ['Tom Collier, Justin Richard']
   spec.email         = ['collier@apartmentlist.com, justin@apartmentlist.com']
 
