@@ -1,8 +1,10 @@
+![Travis status for apartmentlist/bulk-processor](https://travis-ci.org/apartmentlist/bulk-processor.svg?branch=master)
+
+
 # BulkProcessor
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/bulk_processor`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Bulk upload data in a file (e.g. CSV), process in the background, then send a
+success or failure report
 
 ## Installation
 
