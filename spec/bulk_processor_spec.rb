@@ -118,5 +118,23 @@ describe BulkProcessor do
         end
       end
     end
+
+    context 'the job receives a SignalError' do
+      before do
+        allow_any_instance_of(TestItemProcessor)
+          .to receive(:process!).and_raise(SignalException, 'SIGTERM')
+      end
+
+      it 'calls .complete with the fatal error' do
+        perform_enqueued_jobs do
+          expect(TestHandler)
+            .to receive(:complete)
+                  .with(anything, anything, anything, instance_of(SignalException))
+
+          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
+          processor.process
+        end
+      end
+    end
   end
 end
