@@ -27,10 +27,14 @@ module BulkProcessor
     def process(payload, stream, item_processor, handler)
       encoded = stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
       table = CSV.parse(encoded, PARSING_OPTIONS)
-      validator = HeaderValidator.new(table.headers, item_processor.required_columns, item_processor.optional_columns)
+      required_columns = item_processor.required_columns
+      optional_columns = item_processor.optional_columns
+      validator =
+        HeaderValidator.new(table.headers, required_columns, optional_columns)
 
       if validator.valid?
-        Job.perform_later(payload, table.map(&:to_hash), item_processor.to_s, handler.to_s)
+        records = table.map(&:to_hash)
+        Job.perform_later(payload, records, item_processor.to_s, handler.to_s)
       else
         handler.invalid(payload, validator.errors)
       end

@@ -19,8 +19,9 @@ describe BulkProcessor do
         let(:required_columns) { ['foo'] }
 
         it 'rejects the file with errors' do
+          message = 'Missing required column(s): foo'
           expect(TestHandler)
-            .to receive(:invalid).with({}, array_including('Missing required column(s): foo'))
+            .to receive(:invalid).with({}, array_including(message))
 
           BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
@@ -30,8 +31,9 @@ describe BulkProcessor do
         let(:optional_columns) { [] }
 
         it 'rejects the file with errors' do
+          message = 'Unrecognized column(s) found: name'
           expect(TestHandler)
-            .to receive(:invalid).with({}, array_including('Unrecognized column(s) found: name'))
+            .to receive(:invalid).with({}, array_including(message))
 
           BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
@@ -41,8 +43,9 @@ describe BulkProcessor do
         let(:csv) { ",name\n1,Rex" }
 
         it 'rejects the file with errors' do
+          message = 'Missing or malformed column header'
           expect(TestHandler)
-            .to receive(:invalid).with({}, array_including('Missing or malformed column header'))
+            .to receive(:invalid).with({}, array_including(message))
 
           BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
@@ -51,14 +54,15 @@ describe BulkProcessor do
 
     context 'with an valid file' do
       it 'enqueues the work' do
-        BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor, TestHandler)
+        BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         expect(enqueued_jobs.length).to eq(1)
       end
 
       it 'strips non-UTF-8 characters from the stream' do
         perform_enqueued_jobs do
           stream = StringIO.new("name\nyen=\xA5")
-          expect(TestItemProcessor).to receive(:new).with('name' => 'yen=').and_call_original
+          expect(TestItemProcessor)
+            .to receive(:new).with('name' => 'yen=').and_call_original
           BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
       end
@@ -67,15 +71,18 @@ describe BulkProcessor do
     context 'sucessfully processed the file' do
       it 'calls .complete on the handler with the original payload' do
         perform_enqueued_jobs do
-          expect(TestHandler).to receive(:complete).with({ my: 'stuff' }, anything, anything)
-          BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor, TestHandler)
+          expect(TestHandler)
+            .to receive(:complete).with({ my: 'stuff' }, anything, anything)
+          BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor,
+                                TestHandler)
         end
       end
 
       it 'calls .complete on the handler with successes' do
         perform_enqueued_jobs do
-          expect(TestHandler).to receive(:complete).with(anything, { 0 => [] }, anything)
-          BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor, TestHandler)
+          expect(TestHandler)
+            .to receive(:complete).with(anything, { 0 => [] }, anything)
+          BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
       end
 
@@ -84,8 +91,10 @@ describe BulkProcessor do
 
         it 'calls .complete on the handler with failures' do
           perform_enqueued_jobs do
-            expect(TestHandler).to receive(:complete).with(anything, anything, { 0 => ['bad dog'] })
-            BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor, TestHandler)
+            expect(TestHandler)
+              .to receive(:complete)
+                    .with(anything, anything, { 0 => ['bad dog'] })
+            BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
           end
         end
       end
@@ -96,8 +105,10 @@ describe BulkProcessor do
 
       it 'calls .complete with the fatal error' do
         perform_enqueued_jobs do
-          expect(TestHandler).to receive(:complete).with(anything, anything, anything, instance_of(RuntimeError))
-          BulkProcessor.process({my: 'stuff'}, stream, TestItemProcessor, TestHandler)
+          expect(TestHandler)
+            .to receive(:complete)
+                  .with(anything, anything, anything, instance_of(RuntimeError))
+          BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         end
       end
     end
