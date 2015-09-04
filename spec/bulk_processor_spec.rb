@@ -52,7 +52,7 @@ describe BulkProcessor do
       end
     end
 
-    context 'with an valid file' do
+    context 'with a valid file' do
       it 'enqueues the work' do
         BulkProcessor.process({}, stream, TestItemProcessor, TestHandler)
         expect(enqueued_jobs.length).to eq(1)
