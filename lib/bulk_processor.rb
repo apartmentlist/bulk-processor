@@ -24,7 +24,7 @@ module BulkProcessor
       yield config
     end
 
-    def process(payload, stream, item_processor, handler)
+    def process(stream, item_processor, handler, payload = {})
       encoded = stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
       table = CSV.parse(encoded, PARSING_OPTIONS)
       required_columns = item_processor.required_columns
@@ -34,7 +34,7 @@ module BulkProcessor
 
       if validator.valid?
         records = table.map(&:to_hash)
-        Job.perform_later(payload, records, item_processor.to_s, handler.to_s)
+        Job.perform_later(records, item_processor.to_s, handler.to_s, payload)
       else
         handler.invalid(payload, validator.errors)
       end

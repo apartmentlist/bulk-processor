@@ -2,7 +2,7 @@ module BulkProcessor
   class Job < ActiveJob::Base
     queue_as 'bulk_processor'
 
-    def perform(payload, records, item_proccessor, handler)
+    def perform(records, item_proccessor, handler, payload)
       item_proccessor_class = item_proccessor.constantize
       handler_class = handler.constantize
 
