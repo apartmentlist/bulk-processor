@@ -6,7 +6,7 @@ require 'bulk_processor/header_validator'
 require 'bulk_processor/job'
 require 'bulk_processor/version'
 
-module BulkProcessor
+class BulkProcessor
   PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
   ENCODING_OPTIONS = { undef: :replace, invalid: :replace, replace: '' }
 
@@ -24,27 +24,39 @@ module BulkProcessor
       yield config
     end
 
-    def process(stream, item_processor, handler, payload = {})
-      encoded = stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
-      table = CSV.parse(encoded, PARSING_OPTIONS)
-      required_columns = item_processor.required_columns
-      optional_columns = item_processor.optional_columns
-      validator =
-        HeaderValidator.new(table.headers, required_columns, optional_columns)
+  end
 
-      if validator.valid?
-        records = table.map(&:to_hash)
-        Job.perform_later(records, item_processor.to_s, handler.to_s, payload)
-      else
-        handler.invalid(payload, validator.errors)
-      end
+  attr_reader :stream, :item_processor, :handler, :payload, :errors
 
-    rescue NoMethodError => error
-      if error.message == BAD_HEADERS_ERROR_MSG
-        handler.invalid(payload, ['Missing or malformed column header'])
-      else
-        raise error
-      end
+  def initialize(stream, item_processor, handler, payload = {})
+    @stream = stream
+    @item_processor = item_processor
+    @handler = handler
+    @payload = payload
+    @errors = []
+  end
+
+  def process
+    encoded = stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
+    table = CSV.parse(encoded, PARSING_OPTIONS)
+    required_columns = item_processor.required_columns
+    optional_columns = item_processor.optional_columns
+    validator =
+      HeaderValidator.new(table.headers, required_columns, optional_columns)
+
+    if validator.valid?
+      records = table.map(&:to_hash)
+      Job.perform_later(records, item_processor.to_s, handler.to_s, payload)
+    else
+      @errors = validator.errors
     end
+  rescue NoMethodError => error
+    if error.message == BAD_HEADERS_ERROR_MSG
+      @errors << 'Missing or malformed column header'
+    else
+      raise error
+    end
+  ensure
+    return @errors.empty?
   end
 end

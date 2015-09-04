@@ -1,4 +1,4 @@
-module BulkProcessor
+class BulkProcessor
   class Config
     attr_reader :queue_adpter
 

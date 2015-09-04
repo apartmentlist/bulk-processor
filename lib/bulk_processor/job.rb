@@ -1,4 +1,4 @@
-module BulkProcessor
+class BulkProcessor
   class Job < ActiveJob::Base
     queue_as 'bulk_processor'
 
@@ -17,7 +17,7 @@ module BulkProcessor
           failures[index] = processor.messages
         end
       end
-      handler_class.complete(payload, successes, failures)
+      handler_class.complete(payload, successes, failures, nil)
     rescue => error
       handler_class.complete(payload, successes, failures, error)
     end

@@ -1,11 +1,4 @@
 class TestHandler
-  class << self
-    def invalid(_payload, _errors)
-
-    end
-
-    def complete(_payload, _success, _errors, _fatal_error = nil)
-
-    end
+  def self.complete(_payload, _success, _errors, _fatal_error)
   end
 end

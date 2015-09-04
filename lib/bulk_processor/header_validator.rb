@@ -1,4 +1,4 @@
-module BulkProcessor
+class BulkProcessor
   class HeaderValidator
     attr_reader :headers, :required_headers, :optional_headers, :errors
 
