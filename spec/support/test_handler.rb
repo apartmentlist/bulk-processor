@@ -4,7 +4,7 @@ class TestHandler
 
     end
 
-    def complete(_payload, _success, _errors, _fatal_errors = nil)
+    def complete(_payload, _success, _errors, _fatal_error = nil)
 
     end
   end
