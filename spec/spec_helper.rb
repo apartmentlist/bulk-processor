@@ -8,5 +8,5 @@ require 'bulk_processor'
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }
 
 BulkProcessor.configure do |config|
-  config.queue_adpater = :test
+  config.queue_adapter = :test
 end
