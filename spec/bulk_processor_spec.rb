@@ -63,7 +63,7 @@ describe BulkProcessor do
         perform_enqueued_jobs do
           stream = StringIO.new("name\nyen=\xA5")
           expect(TestItemProcessor)
-            .to receive(:new).with('name' => 'yen=').and_call_original
+            .to receive(:new).with({ 'name' => 'yen=' }, anything).and_call_original
           processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
           processor.process
         end

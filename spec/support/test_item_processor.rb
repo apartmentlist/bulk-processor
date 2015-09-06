@@ -10,7 +10,7 @@ class TestItemProcessor
     @@optional_columns || []
   end
 
-  def initialize(record)
+  def initialize(record, _payload)
     @record = record
     @success = false
     @messages = []

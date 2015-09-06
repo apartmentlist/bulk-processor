@@ -9,7 +9,7 @@ class BulkProcessor
       successes = {}
       failures = {}
       records.each_with_index do |record, index|
-        processor = item_proccessor_class.new(record)
+        processor = item_proccessor_class.new(record, payload)
         processor.process!
         if processor.success?
           successes[index] = processor.messages

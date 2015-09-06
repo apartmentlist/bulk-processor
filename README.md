@@ -53,8 +53,9 @@ class PetItemProcessor
 
   # Instantiate the processor with a single row from the CSV represented by
   # a Hash<String, String>
-  def initialize(record_hash)
+  def initialize(record_hash, payload)
     @record_hash = record_hash
+    @payload = payload
     @messages = []
     @success = false
   end
