@@ -22,7 +22,7 @@ class BulkProcessor
       end
 
       if headers.any?(&:nil?)
-        errors << 'Missing or malformed column header'
+        errors << 'Missing or malformed column header, is one of them blank?'
       end
 
       errors.empty?

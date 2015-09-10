@@ -1,4 +1,4 @@
-class TestItemProcessor
+class MockItemProcessor
   cattr_writer :required_columns, :optional_columns
   attr_reader :record, :messages
 

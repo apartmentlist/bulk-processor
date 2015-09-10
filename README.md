@@ -104,7 +104,7 @@ module NotificationHandler
   #   else the error that was raise is passed in here
   def self.complete(payload, successes, errors, fatal_error = nil)
     if fatal_error
-      PetProcessorMailer.fail(payload['recipient'], successes, errors)
+      PetProcessorMailer.fail(payload['recipient'], successes, errors, fatal_error)
     else
       PetProcessorMailer.complete(payload['recipient'], successes, errors)
     end

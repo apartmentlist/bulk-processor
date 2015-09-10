@@ -1,6 +1,12 @@
 include ActiveJob::TestHelper
 
 describe BulkProcessor do
+  class TestItemProcessor < MockItemProcessor
+  end
+
+  class TestHandler < MockHandler
+  end
+
   describe '.process usage' do
     let(:required_columns) { [] }
     let(:optional_columns) { ['name'] }
