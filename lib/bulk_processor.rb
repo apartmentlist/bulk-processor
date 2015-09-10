@@ -52,7 +52,7 @@ class BulkProcessor
     end
   rescue NoMethodError => error
     if error.message == BAD_HEADERS_ERROR_MSG
-      @errors << 'Missing or malformed column header'
+      @errors << 'Missing or malformed column header, is one of them blank?'
     else
       raise error
     end

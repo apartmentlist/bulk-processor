@@ -48,7 +48,7 @@ describe BulkProcessor do
         let(:csv) { ",name\n1,Rex" }
 
         it 'rejects the file with errors' do
-          message = 'Missing or malformed column header'
+          message = 'Missing or malformed column header, is one of them blank?'
           processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
 
           expect(processor.process).to eq(false)
