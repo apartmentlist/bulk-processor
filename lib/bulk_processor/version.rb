@@ -1,3 +1,3 @@
-module BulkProcessor
+class BulkProcessor
   VERSION = '0.1.0'
 end

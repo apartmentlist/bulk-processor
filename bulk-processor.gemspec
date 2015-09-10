@@ -21,6 +21,8 @@ success or failure report
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.1'
 
+  spec.add_runtime_dependency 'activejob'
+
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'pry-byebug'
   spec.add_development_dependency 'rake'
