@@ -1,6 +1,6 @@
 class BulkProcessor
   class HeaderValidator
-    attr_reader :headers, :required_headers, :optional_headers, :errors
+    attr_reader :errors
 
     def initialize(headers, required_headers, optional_headers)
       @headers = headers
@@ -27,5 +27,9 @@ class BulkProcessor
 
       errors.empty?
     end
+
+    private
+
+    attr_reader :headers, :required_headers, :optional_headers
   end
 end
