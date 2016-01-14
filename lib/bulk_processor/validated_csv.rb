@@ -3,6 +3,9 @@ class BulkProcessor
     PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
     private_constant :PARSING_OPTIONS
 
+    # This cryptic message usually just means that the header row contains a
+    # blank field; in ruby ~> 2.1.5 It is the error message for a NoMethodError
+    # raised when parsing a CSV.
     BAD_HEADERS_ERROR_MSG = "undefined method `encode' for nil:NilClass"
     private_constant :BAD_HEADERS_ERROR_MSG
 
@@ -16,6 +19,7 @@ class BulkProcessor
     end
 
     def valid?
+      return false if csv.nil?
       @errors = []
 
       if missing_headers.any?
@@ -29,17 +33,12 @@ class BulkProcessor
       unless csv.headers.all?
         errors << 'Missing or malformed column header, is one of them blank?'
       end
-    rescue NoMethodError => error
-      if error.message == BAD_HEADERS_ERROR_MSG
-        errors << 'Missing or malformed column header, is one of them blank?'
-      else
-        raise error
-      end
-    ensure
-      return errors.empty?
+
+      errors.empty?
     end
 
     def row_hashes
+      return [] unless valid?
       csv.map(&:to_hash)
     end
 
@@ -48,7 +47,15 @@ class BulkProcessor
     attr_reader :stream, :required_headers, :optional_headers
 
     def csv
-      @csv ||= CSV.parse(stream, PARSING_OPTIONS)
+      return @csv if instance_variable_defined?('@csv')
+      @csv = CSV.parse(stream, PARSING_OPTIONS)
+    rescue NoMethodError => error
+      if error.message == BAD_HEADERS_ERROR_MSG
+        errors << 'Missing or malformed column header, is one of them blank?'
+        @csv = nil
+      else
+        raise error
+      end
     end
 
     def missing_headers
