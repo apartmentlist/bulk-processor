@@ -4,11 +4,11 @@ require 'csv'
 require 'bulk_processor/config'
 require 'bulk_processor/header_validator'
 require 'bulk_processor/job'
+require 'bulk_processor/stream_encoder'
 require 'bulk_processor/version'
 
 class BulkProcessor
   PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
-  ENCODING_OPTIONS = { undef: :replace, invalid: :replace, replace: '' }
 
   # This cryptic message usually just means that the header row contains a
   # blank field; in ruby <~ 2.1.5 It is the error message for a NoMethodError
@@ -37,8 +37,7 @@ class BulkProcessor
   end
 
   def process
-    encoded = stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
-    table = CSV.parse(encoded, PARSING_OPTIONS)
+    table = CSV.parse(StreamEncoder.new(stream).encoded, PARSING_OPTIONS)
     required_columns = item_processor.required_columns
     optional_columns = item_processor.optional_columns
     validator =
