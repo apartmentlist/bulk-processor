@@ -34,11 +34,12 @@ The default is `:inline`, which skips queueing and processes synchronously. Sinc
 this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ),
 including `:resque`.
 
-You will also need to supply a class for item processing and a class/module for completion handling.
-The item processor instance must respond to the following messages:
+You will also need to supply a class for CSV processing. This class must respond to the
+`start` instance method, the `required_columns` and `optional_columns` class methods,
+and have the following signature for initialize:
 
-```
-class PetItemProcessor
+```ruby
+class PetCSVProcessor
   # @return [Array<String>] column headers that must be present
   def self.required_columns
     ['species', 'name', 'age']
@@ -51,18 +52,59 @@ class PetItemProcessor
     ['favorite_toy', 'talents']
   end
 
-  # Instantiate the processor with a single row from the CSV represented by
-  # a Hash<String, String>
-  def initialize(record_hash, payload)
-    @record_hash = record_hash
-    @payload = payload
-    @messages = []
-    @success = false
+  def initialize(records, payload:)
+    # Assign instance variables and do any other setup
+  end
+
+  def start
+    # Process the records
+  end
+end
+```
+
+To account for a common use case, a base `BulkProcessor::CSVProcessor` class is provided,
+though it must be explicitly required. This base class can be subclassed to build a CSV processor.
+This base class implements the initializer and `#start` methods and returns an empty set for `.optional_columns`.
+
+The `#start` method iterates over each record, processes it using a `RowProcessor`,
+accumulates the results, which are passed off to a `Handler`. An example
+implementation could look like:
+
+```ruby
+require 'bulk_processor/csv_processor'
+
+class PetCSVProcessor < BulkProcessor::CSVProcessor
+  # @return [Array<String>] column headers that must be present
+  def self.required_columns
+    ['species', 'name', 'age']
+  end
+
+  # @return [Array<String>] column headers that may be present. If a column
+  #   header is present that is not in 'required_columns' or 'optional_columns',
+  #   the file will be considered invalid and no rows will be processed.
+  def self.optional_columns
+    ['favorite_toy', 'talents']
+  end
+
+  # @return [RowProcessor] a class that implements the RowProcessor role
+  def self.row_processor_class
+    PetRowProcessor
+  end
+
+  # @return [Handler] a class that implements the Handler role
+  def self.handler_class
+    PetHandler
+  end
+end
+
+class PetRowProcessor
+  def initialize(record, payload:)
+    # Assign instance variables and do any other setup
   end
 
   # Process the row, e.g. create a new record in the DB, send an email, etc
   def process!
-    pet = Pet.new(record_hash)
+    pet = Pet.new(record)
     if pet.save
       @success = true
     else
@@ -72,25 +114,17 @@ class PetItemProcessor
 
   # @return [true|false] true iff the item was processed completely
   def success?
-    @success
+    @success == true
   end
 
   # @return [Array<String>] list of messages for this item to pass back to the
   #   completion handler.
   def messages
-    @messages
+    @messages || []
   end
 end
-```
 
-A completion handler must respond to the following messages
-
-```ruby
-module NotificationHandler
-  # Handle full or partial processing of records. Unless there was a fatal
-  # error, all row indexes will be present either successes or errors, but not
-  # both.
-  #
+class PetHandler
   # @param payload [Hash] the payload passed into 'BulkProcessor.process', can
   #   be used to pass metadata around, e.g. the email address to send a
   #   completion report to
@@ -100,25 +134,37 @@ module NotificationHandler
   #   (may be empty), e.g. { 0 => [], 1 => ['pet ID = 22 created'] }
   # @param errors [Hash<Fixnum, Array<String>>] similar structure to successes,
   #   but rows that were not completed successfully.
+  def initialize(payload:, successes:, errors:)
+    # Assign instance variables and do any other setup
+  end
+
+  # Notify the owner that their pets were processed
+  def complete!
+    OwnerMailer.competed(successes, errors)
+  end
+
+  # Notify the owner that processing failed
+  #
   # @param fatal_error [StandardError] if nil, then all rows were processed,
   #   else the error that was raise is passed in here
-  def self.complete(payload, successes, errors, fatal_error = nil)
-    if fatal_error
-      PetProcessorMailer.fail(payload['recipient'], successes, errors, fatal_error)
-    else
-      PetProcessorMailer.complete(payload['recipient'], successes, errors)
-    end
+  def fail!(fatal_error)
+    OwnerMailer.failed(fatal_error)
   end
 end
 ```
 
-Requesting file processing
+Putting it all together
 
 ```ruby
-processor = BulkProcessor.new(file_stream, PetItemProcessor, NotificationHandler, {recipient: current_user.email})
-if processor.process
+processor = BulkProcessor.new(
+              stream: file_stream,
+              processor_class: PetCSVProcessor,
+              payload: {recipient: current_user.email}
+            )
+if processor.start
   # The job has been enqueued, go get a coffee and wait
 else
+  # Something went wrong, alert the file uploader
   handle_invalid_file(processor.errors)
 end
 ```

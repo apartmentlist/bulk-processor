@@ -1,21 +1,23 @@
 include ActiveJob::TestHelper
 
 describe BulkProcessor do
-  class TestItemProcessor < MockItemProcessor
-  end
+  describe '#start' do
+    subject do
+      BulkProcessor.new(stream: stream, processor_class: MockCSVProcessor)
+    end
 
-  class TestHandler < MockHandler
-  end
-
-  describe '.process usage' do
     let(:required_columns) { [] }
     let(:optional_columns) { ['name'] }
     let(:stream) { StringIO.new(csv) }
     let(:csv) { "name\nRex" }
+    let(:handler) { instance_double(BulkProcessor::Role::Handler, complete!: true) }
 
     before do
-      TestItemProcessor.required_columns = required_columns
-      TestItemProcessor.optional_columns = optional_columns
+      allow(MockCSVProcessor).to receive(:required_columns)
+        .and_return(required_columns)
+      allow(MockCSVProcessor).to receive(:optional_columns)
+        .and_return(optional_columns)
+      allow(MockHandler).to receive(:new).and_return(handler)
     end
 
     after { clear_enqueued_jobs }
@@ -25,10 +27,8 @@ describe BulkProcessor do
         let(:required_columns) { ['foo'] }
 
         it 'rejects the file with errors and payload' do
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-
-          expect(processor.process).to eq(false)
-          expect(processor.errors).to include('Missing required column(s): foo')
+          expect(subject.start).to eq(false)
+          expect(subject.errors).to include('Missing required column(s): foo')
         end
       end
 
@@ -37,10 +37,9 @@ describe BulkProcessor do
 
         it 'rejects the file with errors' do
           message = 'Unrecognized column(s) found: name'
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
 
-          expect(processor.process).to eq(false)
-          expect(processor.errors).to include(message)
+          expect(subject.start).to eq(false)
+          expect(subject.errors).to include(message)
         end
       end
 
@@ -49,97 +48,55 @@ describe BulkProcessor do
 
         it 'rejects the file with errors' do
           message = 'Missing or malformed column header, is one of them blank?'
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
 
-          expect(processor.process).to eq(false)
-          expect(processor.errors).to include(message)
-        end
-      end
-    end
-
-    context 'with a valid file' do
-      it 'enqueues the work' do
-        processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-
-        expect(processor.process).to eq(true)
-        expect(enqueued_jobs.length).to eq(1)
-      end
-
-      it 'strips non-UTF-8 characters from the stream' do
-        perform_enqueued_jobs do
-          stream = StringIO.new("name\nyen=\xA5")
-          expect(TestItemProcessor)
-            .to receive(:new).with({ 'name' => 'yen=' }, anything).and_call_original
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-          processor.process
+          expect(subject.start).to eq(false)
+          expect(subject.errors).to include(message)
         end
       end
     end
 
     context 'sucessfully processed the file' do
-      it 'calls .complete on the handler with the original payload' do
-        perform_enqueued_jobs do
-          expect(TestHandler)
-            .to receive(:complete).with({ my: 'stuff' }, anything, anything, nil)
-          processor =
-            BulkProcessor.new(stream, TestItemProcessor, TestHandler, { my: 'stuff' })
-          processor.process
-        end
+      subject do
+        BulkProcessor.new(stream: stream, processor_class: MockCSVProcessor,
+                          payload: { my: 'stuff' })
       end
 
-      it 'calls .complete on the handler with successes' do
+      it 'calls #complete! on the handler' do
         perform_enqueued_jobs do
-          expect(TestHandler)
-            .to receive(:complete).with(anything, { 0 => [] }, anything, nil)
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-          processor.process
-        end
-      end
-
-      context 'but one row fails' do
-        let(:csv) { "name\nSocks" }
-
-        it 'calls .complete on the handler with failures' do
-          perform_enqueued_jobs do
-            expect(TestHandler)
-              .to receive(:complete)
-                    .with(anything, anything, { 0 => ['bad dog'] }, nil)
-            processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-            processor.process
-          end
+          expect(handler).to receive(:complete!)
+          subject.start
         end
       end
     end
 
     context 'failed to process the whole file' do
-      let(:csv) { "name\nHuman" }
+      before do
+        allow_any_instance_of(MockRowProcessor)
+          .to receive(:process!).and_raise(StandardError, 'Uh oh!')
+      end
 
-      it 'calls .complete with the fatal error' do
+      it 'calls #fail! with the fatal error' do
         perform_enqueued_jobs do
-          expect(TestHandler)
-            .to receive(:complete)
-                  .with(anything, anything, anything, instance_of(RuntimeError))
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-          processor.process
+          begin
+            expect(handler).to receive(:fail!).with(instance_of(StandardError))
+            subject.start
+          rescue SignalException
+          end
         end
       end
     end
 
     context 'the job receives a SignalError' do
       before do
-        allow_any_instance_of(TestItemProcessor)
+        allow_any_instance_of(MockRowProcessor)
           .to receive(:process!).and_raise(SignalException, 'SIGTERM')
       end
 
       it 'calls .complete with the fatal error' do
         perform_enqueued_jobs do
           begin
-            expect(TestHandler)
-              .to receive(:complete)
-                    .with(anything, anything, anything, instance_of(SignalException))
-
-            processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-            processor.process
+            expect(handler).to receive(:fail!).with(instance_of(SignalException))
+            subject.start
           rescue SignalException
           end
         end
