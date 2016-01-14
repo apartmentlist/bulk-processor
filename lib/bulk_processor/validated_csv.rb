@@ -3,6 +3,9 @@ class BulkProcessor
     PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
     private_constant :PARSING_OPTIONS
 
+    BAD_HEADERS_ERROR_MSG = "undefined method `encode' for nil:NilClass"
+    private_constant :BAD_HEADERS_ERROR_MSG
+
     attr_reader :errors, :records
 
     def initialize(stream, required_headers, optional_headers)
@@ -26,7 +29,14 @@ class BulkProcessor
       unless csv.headers.all?
         errors << 'Missing or malformed column header, is one of them blank?'
       end
-      errors.empty?
+    rescue NoMethodError => error
+      if error.message == BAD_HEADERS_ERROR_MSG
+        errors << 'Missing or malformed column header, is one of them blank?'
+      else
+        raise error
+      end
+    ensure
+      return errors.empty?
     end
 
     def row_hashes
