@@ -74,6 +74,8 @@ implementation could look like:
 require 'bulk_processor/csv_processor'
 
 class PetCSVProcessor < BulkProcessor::CSVProcessor
+  # Note: this must be overridden in a subclass
+  #
   # @return [Array<String>] column headers that must be present
   def self.required_columns
     ['species', 'name', 'age']
@@ -86,6 +88,8 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
     ['favorite_toy', 'talents']
   end
 
+  # Note: this must be overridden in a subclass
+  #
   # @return [RowProcessor] a class that implements the RowProcessor role
   def self.row_processor_class
     PetRowProcessor

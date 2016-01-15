@@ -1,3 +1,5 @@
+require_relative 'no_op_handler'
+
 class BulkProcessor
   # An abstract implmentation of the CSVProcessor role. Provides
   #
@@ -12,13 +14,14 @@ class BulkProcessor
   #      messages?)
   #   3. Send the results to an instance of the Handler role.
   #
-  # This class adds 2 required class methods that must be overridden in any
+  # This class adds 2 required class methods that can be overridden in any
   # subclass
   #
-  #   * row_processor_class - returns the class that implements the RowProcessor
-  #     role to process rows of the CSV
-  #   * handler_class - returns the class that implements the Handler role,
-  #     which handles completion (or failure) of processing the entire CSV
+  #   * row_processor_class - (required) Returns the class that implements the
+  #     RowProcessor role to process rows of the CSV
+  #   * handler_class - (optional) Returns the class that implements the Handler
+  #     role,  which handles results from the completion (or failure) of
+  #     processing the entire CSV.
   #
   # The `required_columns` method must still be implemented in a subclass
   #
@@ -31,8 +34,7 @@ class BulkProcessor
 
     # @return [Handler] a class that implements the Handler role
     def self.handler_class
-      raise NotImplementedError,
-            "#{self.class.name} must implement #{__method__}"
+      NoOpHandler
     end
 
     # @return [Array<String>] column headers that must be present
