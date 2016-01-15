@@ -1,4 +1,7 @@
+require 'csv'
+
 class BulkProcessor
+  # A Wrapper on CSV that validates column headers.
   class ValidatedCSV
     PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
     private_constant :PARSING_OPTIONS
@@ -9,6 +12,9 @@ class BulkProcessor
     BAD_HEADERS_ERROR_MSG = "undefined method `encode' for nil:NilClass"
     private_constant :BAD_HEADERS_ERROR_MSG
 
+    MISSING_COLUMN_MESSAGE = 'Missing or malformed column header, is one of them blank?'
+    private_constant :MISSING_COLUMN_MESSAGE
+
     attr_reader :errors, :records
 
     def initialize(stream, required_headers, optional_headers)
@@ -18,6 +24,10 @@ class BulkProcessor
       @errors = []
     end
 
+    # @return [true|false] true iff:
+    #   * All required columns are present
+    #   * No column exists that isn't a required or optional column
+    #   * No column heading is blank
     def valid?
       return false if csv.nil?
       @errors = []
@@ -30,13 +40,15 @@ class BulkProcessor
         errors << "Unrecognized column(s) found: #{extra_headers.join(', ')}"
       end
 
-      unless csv.headers.all?
-        errors << 'Missing or malformed column header, is one of them blank?'
+      if csv.headers.any? { |header| header.nil? || header.strip == '' }
+        errors << MISSING_COLUMN_MESSAGE
       end
 
       errors.empty?
     end
 
+    # @return [Array<Hash<String, String>>] a serializable representation of the
+    #   CSV that will be passed to the background job.
     def row_hashes
       return [] unless valid?
       csv.map(&:to_hash)
@@ -51,7 +63,7 @@ class BulkProcessor
       @csv = CSV.parse(stream, PARSING_OPTIONS)
     rescue NoMethodError => error
       if error.message == BAD_HEADERS_ERROR_MSG
-        errors << 'Missing or malformed column header, is one of them blank?'
+        errors << MISSING_COLUMN_MESSAGE
         @csv = nil
       else
         raise error
