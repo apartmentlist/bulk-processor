@@ -18,11 +18,9 @@ class BulkProcessor
         end
       end
       handler_class.complete(payload, successes, failures, nil)
-    rescue => error
-      handler_class.complete(payload, successes, failures, error)
     rescue Exception => exception
       handler_class.complete(payload, successes, failures, exception)
-      raise
+      raise unless exception.is_a?(StandardError)
     end
   end
 end

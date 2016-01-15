@@ -133,12 +133,15 @@ describe BulkProcessor do
 
       it 'calls .complete with the fatal error' do
         perform_enqueued_jobs do
-          expect(TestHandler)
-            .to receive(:complete)
-                  .with(anything, anything, anything, instance_of(SignalException))
+          begin
+            expect(TestHandler)
+              .to receive(:complete)
+                    .with(anything, anything, anything, instance_of(SignalException))
 
-          processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
-          processor.process
+            processor = BulkProcessor.new(stream, TestItemProcessor, TestHandler)
+            processor.process
+          rescue SignalException
+          end
         end
       end
     end
