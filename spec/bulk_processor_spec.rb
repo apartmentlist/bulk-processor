@@ -77,11 +77,8 @@ describe BulkProcessor do
 
       it 'calls #fail! with the fatal error' do
         perform_enqueued_jobs do
-          begin
-            expect(handler).to receive(:fail!).with(instance_of(StandardError))
-            subject.start
-          rescue SignalException
-          end
+          expect(handler).to receive(:fail!).with(instance_of(StandardError))
+          subject.start
         end
       end
     end
