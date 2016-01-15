@@ -4,4 +4,7 @@ class MockPostProcessor
 
   def start
   end
+
+  def errors
+  end
 end

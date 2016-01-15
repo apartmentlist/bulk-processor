@@ -58,8 +58,8 @@ class BulkProcessor
     end
 
     def initialize(records, payload: {})
-      @records = records
       @payload = payload
+      @row_processors = records.map(&method(:row_processor))
       @successes = {}
       @errors = {}
     end
@@ -69,7 +69,6 @@ class BulkProcessor
     # processing will halt for all remaining records and the `#fail!` will be
     # invoked on the handler.
     def start
-      row_processors = records.map(&method(:row_processor))
       row_processors.each_with_index do |processor, index|
         processor.process!
         if processor.success?
@@ -78,7 +77,7 @@ class BulkProcessor
           errors[index] = processor.messages
         end
       end
-      self.class.post_processor_class.new(row_processors).start
+      post_processes
       handler.complete!
     rescue Exception => exception
       handler.fail!(exception)
@@ -91,7 +90,7 @@ class BulkProcessor
 
     private
 
-    attr_reader :records, :payload, :successes, :errors
+    attr_reader :row_processors, :payload, :successes, :errors
 
     def handler
       self.class.handler_class.new(payload: payload, successes: successes,
@@ -100,6 +99,12 @@ class BulkProcessor
 
     def row_processor(record)
       self.class.row_processor_class.new(record, payload: payload)
+    end
+
+    def post_processes
+      post_processor = self.class.post_processor_class.new(row_processors)
+      post_processor.start
+      errors['post-processing'] = post_processor.errors if post_processor.errors.any?
     end
   end
 end

@@ -30,7 +30,7 @@ describe BulkProcessor::CSVProcessor do
                                                          messages: ['Woah 2'])
     end
     let(:post_processor) do
-      instance_double(BulkProcessor::Role::PostProcessor, start: true)
+      instance_double(BulkProcessor::Role::PostProcessor, start: true, errors: [])
     end
 
     before do
@@ -118,6 +118,19 @@ describe BulkProcessor::CSVProcessor do
           expect do
             subject.start
           end.to raise_error(SignalException, 'SIGTERM')
+        end
+      end
+
+      context 'when post-processing results in errors' do
+        before { allow(post_processor).to receive(:errors).and_return(['Err']) }
+
+        it 'adds the errors to the errors hash' do
+          expected_errors = { 'post-processing' => ['Err'] }
+          expect(MockHandler).to receive(:new)
+            .with(payload: anything, successes: anything,
+                  errors: hash_including(expected_errors)
+            ).and_return(handler)
+          subject.start
         end
       end
     end
