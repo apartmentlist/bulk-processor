@@ -1,4 +1,5 @@
 require_relative 'no_op_handler'
+require_relative 'no_op_post_processor'
 
 class BulkProcessor
   # An abstract implmentation of the CSVProcessor role. Provides
@@ -37,6 +38,11 @@ class BulkProcessor
       NoOpHandler
     end
 
+    # @return [PostProcessor] a class that implements the PostProcessor role
+    def self.post_processor_class
+      NoOpPostProcessor
+    end
+
     # @return [Array<String>] column headers that must be present
     def self.required_columns
       raise NotImplementedError,
@@ -63,8 +69,8 @@ class BulkProcessor
     # processing will halt for all remaining records and the `#fail!` will be
     # invoked on the handler.
     def start
-      records.each_with_index do |record, index|
-        processor = row_processor(record)
+      row_processors = records.map(&method(:row_processor))
+      row_processors.each_with_index do |processor, index|
         processor.process!
         if processor.success?
           successes[index] = processor.messages
@@ -72,6 +78,7 @@ class BulkProcessor
           errors[index] = processor.messages
         end
       end
+      self.class.post_processor_class.new(row_processors).start
       handler.complete!
     rescue Exception => exception
       handler.fail!(exception)

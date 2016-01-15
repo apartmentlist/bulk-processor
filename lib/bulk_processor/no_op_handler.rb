@@ -1,4 +1,5 @@
 class BulkProcessor
+  # A null object implementation of the Handler role
   class NoOpHandler
     def initialize(payload:, successes:, errors:)
     end

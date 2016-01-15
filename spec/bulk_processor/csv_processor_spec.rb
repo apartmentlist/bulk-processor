@@ -7,6 +7,8 @@ describe BulkProcessor::CSVProcessor do
   before do
     allow(TestCSVProcessor).to receive(:row_processor_class)
       .and_return(MockRowProcessor)
+    allow(TestCSVProcessor).to receive(:post_processor_class)
+      .and_return(MockPostProcessor)
     allow(TestCSVProcessor).to receive(:handler_class).and_return(MockHandler)
   end
 
@@ -27,6 +29,9 @@ describe BulkProcessor::CSVProcessor do
                                                          success?: true,
                                                          messages: ['Woah 2'])
     end
+    let(:post_processor) do
+      instance_double(BulkProcessor::Role::PostProcessor, start: true)
+    end
 
     before do
       allow(MockRowProcessor).to receive(:new)
@@ -35,12 +40,20 @@ describe BulkProcessor::CSVProcessor do
       allow(MockRowProcessor).to receive(:new)
         .with({ 'name' => 'Fido' }, payload: payload)
         .and_return(row_processor_2)
+      allow(MockPostProcessor).to receive(:new)
+        .with([row_processor_1, row_processor_2])
+        .and_return(post_processor)
       allow(MockHandler).to receive(:complete)
     end
 
     it 'processes all records' do
       expect(row_processor_1).to receive(:process!)
       expect(row_processor_2).to receive(:process!)
+      subject.start
+    end
+
+    it 'post-processes the CSV' do
+      expect(post_processor).to receive(:start)
       subject.start
     end
 
