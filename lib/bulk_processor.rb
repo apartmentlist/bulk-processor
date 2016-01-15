@@ -1,12 +1,10 @@
-require 'active_job'
-require 'csv'
-
 require 'bulk_processor/config'
 require 'bulk_processor/job'
 require 'bulk_processor/stream_encoder'
 require 'bulk_processor/validated_csv'
 require 'bulk_processor/version'
 
+# Process large CSV files in the background.
 class BulkProcessor
   class << self
     def config
@@ -16,31 +14,34 @@ class BulkProcessor
     def configure
       yield config
     end
-
   end
 
-  attr_reader :stream, :item_processor, :handler, :payload, :errors
+  attr_reader :errors
 
-  def initialize(stream, item_processor, handler, payload = {})
+  def initialize(stream:, processor_class:, payload: {})
     @stream = stream
-    @item_processor = item_processor
-    @handler = handler
+    @processor_class = processor_class
     @payload = payload
     @errors = []
   end
 
-  def process
+  # Validate the CSV and enqueue if for processing in the background.
+  def start
     csv = ValidatedCSV.new(
       StreamEncoder.new(stream).encoded,
-      item_processor.required_columns,
-      item_processor.optional_columns
+      processor_class.required_columns,
+      processor_class.optional_columns
     )
 
     if csv.valid?
-      Job.perform_later(csv.row_hashes, item_processor.to_s, handler.to_s, payload)
+      Job.perform_later(csv.row_hashes, processor_class.name, payload)
     else
       @errors = csv.errors
     end
     @errors.empty?
   end
+
+  private
+
+  attr_reader :stream, :processor_class, :payload
 end

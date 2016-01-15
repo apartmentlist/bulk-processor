@@ -1,16 +1,7 @@
-class MockItemProcessor
-  cattr_writer :required_columns, :optional_columns
+class MockRowProcessor
   attr_reader :record, :messages
 
-  def self.required_columns
-    @@required_columns || []
-  end
-
-  def self.optional_columns
-    @@optional_columns || []
-  end
-
-  def initialize(record, _payload)
+  def initialize(record, payload:)
     @record = record
     @success = false
     @messages = []

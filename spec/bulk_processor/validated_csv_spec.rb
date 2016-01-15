@@ -70,4 +70,22 @@ describe BulkProcessor::ValidatedCSV do
       expect(subject.row_hashes).to eq([])
     end
   end
+
+  context 'with header that is all whitespace' do
+    let(:csv_str) { "name, ,age\nRex,1" }
+
+    it 'is not valid' do
+      expect(subject).to_not be_valid
+    end
+
+    it 'provides a useful error message' do
+      subject.valid?
+      expect(subject.errors)
+        .to include('Missing or malformed column header, is one of them blank?')
+    end
+
+    it 'has empty row_hashes' do
+      expect(subject.row_hashes).to eq([])
+    end
+  end
 end

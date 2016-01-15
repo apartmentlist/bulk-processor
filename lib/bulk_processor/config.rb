@@ -1,4 +1,5 @@
 class BulkProcessor
+  # Store configuration data set by clients
   class Config
     attr_reader :queue_adapter
 

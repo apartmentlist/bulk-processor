@@ -1,15 +1,17 @@
 describe BulkProcessor::Job do
-  context 'when a SIGTERM is received' do
+  describe '#perform' do
+    let(:csv_processor) { instance_double(BulkProcessor::Role::CSVProcessor) }
+    let(:records) { [{ 'species' => 'dog' }] }
+    let(:payload) { { 'other' => 'data' } }
+
     before do
-      allow_any_instance_of(MockItemProcessor)
-        .to receive(:process!).and_raise(SignalException, 'SIGTERM')
+      allow(MockCSVProcessor).to receive(:new)
+        .with(records, payload: payload).and_return(csv_processor)
     end
 
-    it 're-raises the SignalException' do
-      expect do
-        job = BulkProcessor::Job.new
-        job.perform([{ 'species' => 'dog' }], 'MockItemProcessor', 'TestHandler', {})
-      end.to raise_error(SignalException)
+    it 'starts a new CSVProcessor instance' do
+      expect(csv_processor).to receive(:start)
+      subject.perform(records, 'MockCSVProcessor', payload)
     end
   end
 end
