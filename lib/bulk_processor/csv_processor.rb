@@ -75,6 +75,10 @@ class BulkProcessor
       handler.complete!
     rescue Exception => exception
       handler.fail!(exception)
+
+      # Swallow any StandardError, since we are already reporting it to the
+      # user. However, we must re-raise Exceptions, such as SIGTERMs since they
+      # need to be handled at a level above this gem.
       raise unless exception.is_a?(StandardError)
     end
 
