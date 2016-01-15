@@ -1,5 +1,5 @@
-require_relative 'no_op_handler'
-require_relative 'no_op_post_processor'
+require_relative 'csv_processor/no_op_handler'
+require_relative 'csv_processor/no_op_post_processor'
 
 class BulkProcessor
   # An abstract implmentation of the CSVProcessor role. Provides
