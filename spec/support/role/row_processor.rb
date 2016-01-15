@@ -3,7 +3,7 @@ class BulkProcessor
     # Role used by BulkProcessor::CSVProcessor (itself an abstract
     # implementation of the CSVProcessor role) to process an individual CSV row.
     class RowProcessor
-      def initialize(record, payload: payload)
+      def initialize(record, payload:)
       end
 
       def process!
