@@ -1,6 +1,20 @@
 class BulkProcessor
   class CSVProcessor
-    # An abstract implementation of the RowProcessor role
+    # An abstract implementation of the RowProcessor role. This class implements
+    # `#results` by returning an array of `Results`. To subclass, just implement
+    # `#process` to handle the row.
+    #
+    # The row will be considered a failure by default. After a row is successfully
+    # processed, set `self.successful = true`. If there are any messages that
+    # should be passed back to the Handler, add them to the `#errors` array.
+    #
+    # You can optionally override `#primary_keys` so that the result returned
+    # has more natural identifiers than just the row number. For example, you
+    # setting this to ['species', 'name'] (for the PetRowProcessor example from
+    # the README), the result would have `#primary_attributes` like
+    #
+    #  { 'species' => 'dog', 'name' => 'Fido' }
+    #
     class RowProcessor
       PRIMARY_KEY_ROW_NUM = '_row_num'.freeze
 
