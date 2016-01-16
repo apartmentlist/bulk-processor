@@ -90,14 +90,14 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
 
   # Note: this must be overridden in a subclass
   #
-  #  @return [RowProcessor] a class that implements the RowProcessor role
+  # @return [RowProcessor] a class that implements the RowProcessor role
   def self.row_processor_class
     PetRowProcessor
   end
 
-  #  @return [PostProcessor] a class that implements the PostProcessor role
+  # @return [PostProcessor] a class that implements the PostProcessor role
   def self.post_processor_class
-    PetPostsProcessor
+    PetPostProcessor
   end
 
   # @return [Handler] a class that implements the Handler role
@@ -105,7 +105,9 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
     PetHandler
   end
 end
+```
 
+```ruby
 class PetRowProcessor < BulkProcessor::CSVProcessor::RowProcessor
   # Process the row, e.g. create a new record in the DB, send an email, etc
   def process!
@@ -123,8 +125,10 @@ class PetRowProcessor < BulkProcessor::CSVProcessor::RowProcessor
     ['species', 'name']
   end
 end
+```
 
-class PetPostsProcessor
+```ruby
+class PetPostProcessor
   attr_reader :results
 
   def initialize(row_processors)
@@ -144,7 +148,9 @@ class PetPostsProcessor
     end
   end
 end
+```
 
+```ruby
 class PetHandler
   # @param payload [Hash] the payload passed into 'BulkProcessor.process', can
   #   be used to pass metadata around, e.g. the email address to send a
@@ -177,7 +183,7 @@ Putting it all together
 processor = BulkProcessor.new(
               stream: file_stream,
               processor_class: PetCSVProcessor,
-              payload: {recipient: current_user.email}
+              payload: { recipient: current_user.email }
             )
 if processor.start
   # The job has been enqueued, go get a coffee and wait
