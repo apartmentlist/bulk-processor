@@ -3,19 +3,20 @@ require 'csv'
 class BulkProcessor
   # A Wrapper on CSV that validates column headers.
   class ValidatedCSV
-    PARSING_OPTIONS  = { headers: true, header_converters: :downcase }
+    PARSING_OPTIONS  = { headers: true, header_converters: :downcase }.freeze
     private_constant :PARSING_OPTIONS
 
     # This cryptic message usually just means that the header row contains a
     # blank field; in ruby ~> 2.1.5 It is the error message for a NoMethodError
     # raised when parsing a CSV.
-    BAD_HEADERS_ERROR_MSG = "undefined method `encode' for nil:NilClass"
+    BAD_HEADERS_ERROR_MSG = "undefined method `encode' for nil:NilClass".freeze
     private_constant :BAD_HEADERS_ERROR_MSG
 
-    MISSING_COLUMN_MESSAGE = 'Missing or malformed column header, is one of them blank?'
+    MISSING_COLUMN_MESSAGE =
+      'Missing or malformed column header, is one of them blank?'.freeze
     private_constant :MISSING_COLUMN_MESSAGE
 
-    attr_reader :errors, :records
+    attr_reader :errors
 
     def initialize(stream, required_headers, optional_headers)
       @stream = stream
@@ -33,11 +34,11 @@ class BulkProcessor
       @errors = []
 
       if missing_headers.any?
-        errors << "Missing required column(s): #{missing_headers.join(', ')}"
+        errors << "Missing required column(s): #{missing_headers.join(', ')}".freeze
       end
 
       if extra_headers.any?
-        errors << "Unrecognized column(s) found: #{extra_headers.join(', ')}"
+        errors << "Unrecognized column(s) found: #{extra_headers.join(', ')}".freeze
       end
 
       if csv.headers.any? { |header| header.nil? || header.strip == '' }

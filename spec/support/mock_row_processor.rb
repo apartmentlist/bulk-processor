@@ -1,12 +1,10 @@
 class MockRowProcessor
-  attr_reader :messages
-
-  def initialize(record, payload:)
+  def initialize(row, payload:)
   end
 
   def process!
   end
 
-  def success?
+  def result
   end
 end

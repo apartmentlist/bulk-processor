@@ -15,30 +15,28 @@ describe BulkProcessor::CSVProcessor do
   it_behaves_like 'a role', 'CSVProcessor'
 
   describe '#start' do
-    subject { TestCSVProcessor.new(records, payload: payload) }
+    subject { TestCSVProcessor.new(csv, payload: payload) }
 
-    let(:records) { [{ 'name' => 'Rex' }, { 'name' => 'Fido' }] }
+    let(:csv) { [{ 'name' => 'Rex' }, { 'name' => 'Fido' }] }
     let(:payload) { { 'relevant' => 'data' } }
     let(:row_processor_1) do
       instance_double(BulkProcessor::Role::RowProcessor, process!: true,
-                                                         success?: true,
-                                                         messages: ['Woah 1'])
+                                                         result: 'Result 1')
     end
     let(:row_processor_2) do
       instance_double(BulkProcessor::Role::RowProcessor, process!: true,
-                                                         success?: true,
-                                                         messages: ['Woah 2'])
+                                                         result: 'Result 2')
     end
     let(:post_processor) do
-      instance_double(BulkProcessor::Role::PostProcessor, start: true, errors: [])
+      instance_double(BulkProcessor::Role::PostProcessor, start: true, results: [])
     end
 
     before do
       allow(MockRowProcessor).to receive(:new)
-        .with({ 'name' => 'Rex' }, payload: payload)
+        .with(hash_including('name' => 'Rex'), payload: payload)
         .and_return(row_processor_1)
       allow(MockRowProcessor).to receive(:new)
-        .with({ 'name' => 'Fido' }, payload: payload)
+        .with(hash_including('name' => 'Fido'), payload: payload)
         .and_return(row_processor_2)
       allow(MockPostProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])
@@ -46,7 +44,7 @@ describe BulkProcessor::CSVProcessor do
       allow(MockHandler).to receive(:complete)
     end
 
-    it 'processes all records' do
+    it 'processes all rows' do
       expect(row_processor_1).to receive(:process!)
       expect(row_processor_2).to receive(:process!)
       subject.start
@@ -63,30 +61,19 @@ describe BulkProcessor::CSVProcessor do
                                                       fail!: true)
       end
 
-      before do
-        allow(MockHandler).to receive(:new).and_return(handler)
-        allow(row_processor_2).to receive(:success?).and_return(false)
-      end
+      before { allow(MockHandler).to receive(:new).and_return(handler) }
 
       it 'initializes the handler with the payload' do
         expect(MockHandler).to receive(:new)
-          .with(payload: payload, successes: anything, errors: anything)
+          .with(payload: payload, results: anything)
           .and_return(handler)
         subject.start
       end
 
-      it 'initializes the handler with successes' do
-        expected_successes = { 0 => ['Woah 1'] }
+      it 'initializes the handler with results' do
+        expected_results = ['Result 1', 'Result 2']
         expect(MockHandler).to receive(:new)
-          .with(payload: anything, successes: expected_successes, errors: anything)
-          .and_return(handler)
-        subject.start
-      end
-
-      it 'initializes the handler with errors' do
-        expected_errors = { 1 => ['Woah 2'] }
-        expect(MockHandler).to receive(:new)
-          .with(payload: anything, successes: anything, errors: expected_errors)
+          .with(payload: anything, results: expected_results)
           .and_return(handler)
         subject.start
       end
@@ -122,13 +109,12 @@ describe BulkProcessor::CSVProcessor do
       end
 
       context 'when post-processing results in errors' do
-        before { allow(post_processor).to receive(:errors).and_return(['Err']) }
+        before { allow(post_processor).to receive(:results).and_return(['Err']) }
 
         it 'adds the errors to the errors hash' do
-          expected_errors = { 'post-processing' => ['Err'] }
+          expected_results = ['Err']
           expect(MockHandler).to receive(:new)
-            .with(payload: anything, successes: anything,
-                  errors: hash_including(expected_errors)
+            .with(payload: anything, results: array_including(expected_results)
             ).and_return(handler)
           subject.start
         end

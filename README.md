@@ -52,12 +52,12 @@ class PetCSVProcessor
     ['favorite_toy', 'talents']
   end
 
-  def initialize(records, payload:)
+  def initialize(csv, payload:)
     # Assign instance variables and do any other setup
   end
 
   def start
-    # Process the records
+    # Process the CSV
   end
 end
 ```
@@ -66,7 +66,7 @@ To account for a common use case, a base `BulkProcessor::CSVProcessor` class is 
 though it must be explicitly required. This base class can be subclassed to build a CSV processor.
 This base class implements the initializer and `#start` methods and returns an empty set for `.optional_columns`.
 
-The `#start` method iterates over each record, processes it using a `RowProcessor`,
+The `#start` method iterates over each row, processes it using a `RowProcessor`,
 accumulates the results, which are passed off to a `Handler`. An example
 implementation could look like:
 
@@ -90,9 +90,14 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
 
   # Note: this must be overridden in a subclass
   #
-  # @return [RowProcessor] a class that implements the RowProcessor role
+  #  @return [RowProcessor] a class that implements the RowProcessor role
   def self.row_processor_class
     PetRowProcessor
+  end
+
+  #  @return [PostProcessor] a class that implements the PostProcessor role
+  def self.post_processor_class
+    PetPostsProcessor
   end
 
   # @return [Handler] a class that implements the Handler role
@@ -101,30 +106,42 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
   end
 end
 
-class PetRowProcessor
-  def initialize(record, payload:)
-    # Assign instance variables and do any other setup
-  end
-
+class PetRowProcessor < BulkProcessor::CSVProcessor::RowProcessor
   # Process the row, e.g. create a new record in the DB, send an email, etc
   def process!
-    pet = Pet.new(record)
+    pet = Pet.new(row)
     if pet.save
-      @success = true
+      self.successful = true
     else
-      @messages = pet.errors.full_messages
+      messages.concat(pet.errors.full_messages)
     end
   end
 
-  # @return [true|false] true iff the item was processed completely
-  def success?
-    @success == true
+  # Setting these allow us to identify error messages by these key/values for
+  # a row, rather than using the row number
+  def primary_keys
+    ['species', 'name']
+  end
+end
+
+class PetPostsProcessor
+  attr_reader :results
+
+  def initialize(row_processors)
+    # Assign instance variables and do any other setup
   end
 
-  # @return [Array<String>] list of messages for this item to pass back to the
-  #   completion handler.
-  def messages
-    @messages || []
+  def start
+    cat_count = 0
+    @results = []
+    row_processors.each do |row_processor|
+      cat_count += 1 if row_processor.cat?
+    end
+
+    if cat_count > 2
+      @results << BulkProcessor::CSVProcessor::Result.new(messages: ['Too many cats!'],
+                                                          successful: false)
+    end
   end
 end
 
@@ -132,19 +149,16 @@ class PetHandler
   # @param payload [Hash] the payload passed into 'BulkProcessor.process', can
   #   be used to pass metadata around, e.g. the email address to send a
   #   completion report to
-  # @param successes [Hash<Fixnum, Array<String>>] keys are all successfully
-  #   processed rows, indexed from 0 (row 1 in the CSV is index 0 in this hash)
-  #   The values are arrays of messages the item processor generated for the row
-  #   (may be empty), e.g. { 0 => [], 1 => ['pet ID = 22 created'] }
-  # @param errors [Hash<Fixnum, Array<String>>] similar structure to successes,
-  #   but rows that were not completed successfully.
-  def initialize(payload:, successes:, errors:)
+  # @param results [Array<BulkProcessor::CSVProcessor::RowProcessor>] results
+  #   for processing the rows (there will be one pre row in the CSV plus zero
+  #   or more from post-processing)
+  def initialize(payload:, results:)
     # Assign instance variables and do any other setup
   end
 
   # Notify the owner that their pets were processed
   def complete!
-    OwnerMailer.competed(successes, errors)
+    OwnerMailer.competed(results, payload)
   end
 
   # Notify the owner that processing failed
@@ -152,7 +166,7 @@ class PetHandler
   # @param fatal_error [StandardError] if nil, then all rows were processed,
   #   else the error that was raise is passed in here
   def fail!(fatal_error)
-    OwnerMailer.failed(fatal_error)
+    OwnerMailer.failed(fatal_error, payload)
   end
 end
 ```
@@ -172,6 +186,17 @@ else
   handle_invalid_file(processor.errors)
 end
 ```
+
+### BulkProcessor::CSVProcessor::Result
+
+The result instances passed from BulkProcessor::CSVProcessor to the Handler
+respond to the following messages:
+
+* `#messages [Array<String>]` - zero or more messages generated when processing the row
+* `#row_num [Fixnum|nil]` - the CSV row number (starting with 2) or nil if result is from post-processing
+* `#primary_attributes [Hash]` - a set of values that can be used to identify which row the messages are for.
+You must override `#primary_keys` to use this.
+* `#successful?` - true iff the processing happened with no errors
 
 ## Development
 

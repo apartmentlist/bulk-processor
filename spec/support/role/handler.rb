@@ -4,7 +4,7 @@ class BulkProcessor
     # implementation of the CSVProcessor role) to report on the results (or
     # failure) of processing a CSV file.
     class Handler
-      def initialize(payload:, successes:, errors:)
+      def initialize(payload:, results:)
       end
 
       def complete!

@@ -8,7 +8,7 @@ class BulkProcessor
       def self.optional_columns
       end
 
-      def initialize(records, payload:)
+      def initialize(csv, payload:)
       end
 
       def start

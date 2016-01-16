@@ -8,7 +8,7 @@ class BulkProcessor
       def start
       end
 
-      def errors
+      def results
         []
       end
     end
