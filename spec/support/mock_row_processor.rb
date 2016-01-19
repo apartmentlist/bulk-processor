@@ -1,5 +1,5 @@
 class MockRowProcessor
-  def initialize(row, payload:)
+  def initialize(row, row_num:, payload:)
   end
 
   def process!

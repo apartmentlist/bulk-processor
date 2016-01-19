@@ -33,10 +33,10 @@ describe BulkProcessor::CSVProcessor do
 
     before do
       allow(MockRowProcessor).to receive(:new)
-        .with(hash_including('name' => 'Rex'), payload: payload)
+        .with(hash_including('name' => 'Rex'), row_num: 2, payload: payload)
         .and_return(row_processor_1)
       allow(MockRowProcessor).to receive(:new)
-        .with(hash_including('name' => 'Fido'), payload: payload)
+        .with(hash_including('name' => 'Fido'), row_num: 3, payload: payload)
         .and_return(row_processor_2)
       allow(MockPostProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])

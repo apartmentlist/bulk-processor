@@ -19,9 +19,8 @@ describe BulkProcessor::CSVProcessor::RowProcessor do
 
   describe '#result' do
     subject do
-      row_num_key = BulkProcessor::CSVProcessor::RowProcessor::PRIMARY_KEY_ROW_NUM
-      row = { 'name' => name, 'ssn' => '0', row_num_key => 3 }
-      TestRowProcessor.new(row, payload: {})
+      row = { 'name' => name, 'ssn' => '0' }
+      TestRowProcessor.new(row, row_num: 3, payload: {})
     end
 
     let(:name) { 'Fred' }

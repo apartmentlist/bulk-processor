@@ -100,9 +100,8 @@ class BulkProcessor
     end
 
     def row_processor(row, index)
-      row_with_row_num =
-        row.merge(RowProcessor::PRIMARY_KEY_ROW_NUM => index + FIRST_ROW_OFFSET)
-      self.class.row_processor_class.new(row_with_row_num, payload: payload)
+      row_num = index + FIRST_ROW_OFFSET
+      self.class.row_processor_class.new(row, row_num: row_num, payload: payload)
     end
 
     def post_processes

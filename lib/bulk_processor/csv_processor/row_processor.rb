@@ -16,12 +16,11 @@ class BulkProcessor
     #  { 'species' => 'dog', 'name' => 'Fido' }
     #
     class RowProcessor
-      PRIMARY_KEY_ROW_NUM = '_row_num'.freeze
-
       attr_reader :messages
 
-      def initialize(row, payload:)
+      def initialize(row, row_num:, payload:)
         @row = row
+        @row_num = row_num
         @payload = payload
         @successful = false
         @messages = []
@@ -37,13 +36,13 @@ class BulkProcessor
       end
 
       def result
-        Result.new(messages: messages, row_num: row[PRIMARY_KEY_ROW_NUM],
+        Result.new(messages: messages, row_num: row_num,
                    primary_attributes: primary_attrs, successful: @successful)
       end
 
       private
 
-      attr_reader :row, :payload
+      attr_reader :row, :row_num, :payload
       attr_writer :successful
 
       # Override this with an array of column names that can be used to uniquely
