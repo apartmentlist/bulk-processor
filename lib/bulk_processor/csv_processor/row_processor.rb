@@ -18,6 +18,8 @@ class BulkProcessor
     class RowProcessor
       PRIMARY_KEY_ROW_NUM = '_row_num'.freeze
 
+      attr_reader :messages
+
       def initialize(row, payload:)
         @row = row
         @payload = payload
@@ -30,6 +32,10 @@ class BulkProcessor
               "#{self.class.name} must implement #{__method__}"
       end
 
+      def successful?
+        @successful
+      end
+
       def result
         Result.new(messages: messages, row_num: row[PRIMARY_KEY_ROW_NUM],
                    primary_attributes: primary_attrs, successful: @successful)
@@ -37,7 +43,7 @@ class BulkProcessor
 
       private
 
-      attr_reader :row, :payload, :messages
+      attr_reader :row, :payload
       attr_writer :successful
 
       # Override this with an array of column names that can be used to uniquely
