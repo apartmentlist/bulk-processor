@@ -3,7 +3,7 @@ require 'csv'
 class BulkProcessor
   # A Wrapper on CSV that validates column headers.
   class ValidatedCSV
-    PARSING_OPTIONS  = { headers: true, header_converters: :downcase }.freeze
+    PARSING_OPTIONS  = { headers: true }.freeze
     private_constant :PARSING_OPTIONS
 
     # This cryptic message usually just means that the header row contains a
@@ -46,13 +46,6 @@ class BulkProcessor
       end
 
       errors.empty?
-    end
-
-    # @return [Array<Hash<String, String>>] a serializable representation of the
-    #   CSV that will be passed to the background job.
-    def row_hashes
-      return [] unless valid?
-      csv.map(&:to_hash)
     end
 
     private

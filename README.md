@@ -195,6 +195,7 @@ end
 
 ```ruby
 processor = BulkProcessor.new(
+              key: file_name,
               stream: file_stream,
               processor_class: PetCSVProcessor,
               payload: { recipient: current_user.email }

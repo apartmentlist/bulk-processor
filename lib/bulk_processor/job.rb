@@ -5,9 +5,15 @@ class BulkProcessor
   class Job < ActiveJob::Base
     queue_as 'bulk_processor'
 
-    def perform(records, processor_class, payload)
-      processor = processor_class.constantize.new(records, payload: payload)
-      processor.start
+    def perform(processor_class, payload, file_class, key)
+      file = file_class.constantize.new(key)
+      file.read do |f|
+        csv = CSV.parse(f.read, headers: true)
+        processor = processor_class.constantize.new(csv, payload: payload)
+        processor.start
+      end
+    ensure
+      file.try(:delete)
     end
   end
 end

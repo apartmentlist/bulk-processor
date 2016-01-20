@@ -9,10 +9,6 @@ describe BulkProcessor::ValidatedCSV do
     it 'is valid' do
       expect(subject).to be_valid
     end
-
-    it 'returns the correct row_hashes' do
-      expect(subject.row_hashes).to eq([{ 'name' => 'Rex', 'age' => '1' }])
-    end
   end
 
   context 'with a missing optional header' do
@@ -20,10 +16,6 @@ describe BulkProcessor::ValidatedCSV do
 
     it 'is valid' do
       expect(subject).to be_valid
-    end
-
-    it 'returns the correct row_hashes' do
-      expect(subject.row_hashes).to eq([{ 'name' => 'Rex' }])
     end
   end
 
@@ -65,10 +57,6 @@ describe BulkProcessor::ValidatedCSV do
       expect(subject.errors)
         .to include('Missing or malformed column header, is one of them blank?')
     end
-
-    it 'has empty row_hashes' do
-      expect(subject.row_hashes).to eq([])
-    end
   end
 
   context 'with header that is all whitespace' do
@@ -82,10 +70,6 @@ describe BulkProcessor::ValidatedCSV do
       subject.valid?
       expect(subject.errors)
         .to include('Missing or malformed column header, is one of them blank?')
-    end
-
-    it 'has empty row_hashes' do
-      expect(subject.row_hashes).to eq([])
     end
   end
 end
