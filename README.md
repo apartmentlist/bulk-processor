@@ -28,17 +28,38 @@ Or install it yourself as:
 
 Bulk processor requires the following configuration
 
+#### Back end: ActiveJob
+
 ```ruby
+BulkProcessor.back_end = :active_job
 BulkProcessor.queue_adapter = <adapter>
-BulkProcessor.temp_directory = '/tmp'
-BulkProcessor.aws.access_key_id = 'my-aws-access-key'
-BulkProcessor.aws.secret_access_key = 'my-aws-secret'
-BulkProcessor.aws.bucket = 'my-s3-bucket'
 ```
 
 The default queue_adapter is `:inline`, which skips queueing and processes synchronously. Since
 this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ) are supported,
 including `:resque`.
+
+#### Back end: Dynosaur
+
+```ruby
+BulkProcessor.back_end = :dynosaur
+BulkProcessor.heroku.api_key = 'my-heroku-api-key'
+BulkProcessor.heroku.app_name = 'my-heroku-app-name'
+```
+
+```ruby
+# Rakefile
+require 'bulk_processor/tasks'
+```
+
+#### AWS S3
+
+```ruby
+BulkProcessor.temp_directory = '/tmp'
+BulkProcessor.aws.access_key_id = 'my-aws-access-key'
+BulkProcessor.aws.secret_access_key = 'my-aws-secret'
+BulkProcessor.aws.bucket = 'my-s3-bucket'
+```
 
 The CSV file passed to BulkProcessor will be persisted on AWS S3 so that the job
 can access it. This requires configuring AWS credentials, the S3 bucket in which
