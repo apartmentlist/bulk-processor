@@ -2,12 +2,15 @@ require 'fileutils'
 
 # Injectable file storage module to use instead of S3File in specs
 class MockFile
-  TMP_PATH_PARTS = %w[tmp mockfs]
+  TMP_PATH_PARTS = %w[tmp mockfs].freeze
   private_constant :TMP_PATH_PARTS
+
+  NAMESPACE = 'bulk_processor'.freeze
+  private_constant :NAMESPACE
 
   # Use this to manually clean up after each spec that creates a file
   def self.cleanup
-    FileUtils.rm_rf(base_dir.join(*TMP_PATH_PARTS))
+    FileUtils.rm_rf(base_dir.join(*TMP_PATH_PARTS, NAMESPACE))
   end
 
   def self.base_dir
@@ -15,7 +18,7 @@ class MockFile
   end
 
   def initialize(key)
-    @key = key
+    @key = "#{NAMESPACE}/#{key}"
   end
 
   def write(contents)
@@ -55,7 +58,7 @@ class MockFile
   end
 
   def with_temp_file
-    file = Tempfile.new('test_file_storage', self.class.base_dir.join('tmp'))
+    file = Tempfile.new('test_file_storage', self.class.base_dir)
     yield file
   ensure
     file.close if file && !file.closed?

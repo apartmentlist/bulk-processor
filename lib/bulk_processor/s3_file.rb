@@ -1,11 +1,15 @@
 require 'aws-sdk'
 
 class BulkProcessor
+  # Read and write files in a pre-configured S3 bucket.
   class S3File
+    NAMESPACE = 'bulk_processor'.freeze
+    private_constant :NAMESPACE
+
     # @param key [String] the unique identifier (within the bucket) used to
     #   access the file
     def initialize(key)
-      @key = key
+      @key = "#{NAMESPACE}/#{key}"
     end
 
     def exists?
@@ -69,7 +73,7 @@ class BulkProcessor
 
     def with_temp_file
       base_dir = Pathname.new(BulkProcessor.config.temp_directory)
-      file = Tempfile.new('aws_utils', base_dir.join('tmp'))
+      file = Tempfile.new('aws_utils', base_dir)
       yield file
     ensure
       file.close if file && !file.closed?

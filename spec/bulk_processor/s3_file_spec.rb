@@ -1,9 +1,9 @@
 describe BulkProcessor::S3File do
-  subject { BulkProcessor::S3File.new(key) }
+  subject { BulkProcessor::S3File.new('files/1/data.txt') }
 
   let(:aws_credentials) { instance_double(Aws::Credentials) }
   let(:bucket) { BulkProcessor.config.aws.bucket }
-  let(:key) { 'files/1/data.txt' }
+  let(:modified_key) { 'bulk_processor/files/1/data.txt' }
   let(:s3_client) { instance_double(Aws::S3::Client) }
 
   before do
@@ -28,7 +28,7 @@ describe BulkProcessor::S3File do
       allow(Aws::S3::Resource).to receive(:new).with(client: s3_client)
         .and_return(s3_resource)
       allow(s3_resource).to receive(:bucket).with(bucket).and_return(s3_bucket)
-      allow(s3_bucket).to receive(:object).with(key).and_return(s3_object)
+      allow(s3_bucket).to receive(:object).with(modified_key).and_return(s3_object)
     end
 
     it 'writes to the bucket' do
@@ -49,7 +49,7 @@ describe BulkProcessor::S3File do
   describe '#read' do
     it 'gets the object from the bucket with the correct key' do
       expect(s3_client).to receive(:get_object)
-        .with({ bucket: bucket, key: key }, anything)
+        .with({ bucket: bucket, key: modified_key }, anything)
       subject.read {}
     end
 
@@ -89,7 +89,8 @@ describe BulkProcessor::S3File do
 
   describe '.delete_file' do
     it 'gets the object from the bucket with the correct key' do
-      expect(s3_client).to receive(:delete_object).with(bucket: bucket, key: key)
+      expect(s3_client).to receive(:delete_object)
+        .with(bucket: bucket, key: modified_key)
       subject.delete
     end
   end
