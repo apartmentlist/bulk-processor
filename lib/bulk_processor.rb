@@ -29,6 +29,11 @@ class BulkProcessor
 
   # Validate the CSV and enqueue if for processing in the background.
   def start(file_class: S3File)
+    if file_class.new(key).exists?
+      errors << "Already processing #{key}, please wait for it to finish"
+      return false
+    end
+
     encoded_contents = StreamEncoder.new(stream).encoded
 
     csv = ValidatedCSV.new(

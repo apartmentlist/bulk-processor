@@ -35,6 +35,10 @@ describe BulkProcessor do
       expect(contents).to eq("name\nRex")
     end
 
+    it 'returns true' do
+      expect(subject.start(file_class: MockFile)).to eq(true)
+    end
+
     context 'when there is an error enqueuing the job' do
       before do
         allow(BulkProcessor::Job).to receive(:perform_later)
@@ -44,6 +48,25 @@ describe BulkProcessor do
       it 'removes the file' do
         subject.start(file_class: MockFile) rescue nil
         expect(MockFile.new('file.csv').exists?).to eq(false)
+      end
+    end
+
+    context 'when the file is already being processed' do
+      before { MockFile.new('file.csv').write(csv_str) }
+
+      it 'does not enqueue a job' do
+        expect(BulkProcessor::Job).to receive(:perform_later).never
+        subject.start(file_class: MockFile)
+      end
+
+      it 'returns false' do
+        expect(subject.start(file_class: MockFile)).to eq(false)
+      end
+
+      it 'adds a useful error' do
+        message = 'Already processing file.csv, please wait for it to finish'
+        subject.start(file_class: MockFile)
+        expect(subject.errors).to include(message)
       end
     end
 
