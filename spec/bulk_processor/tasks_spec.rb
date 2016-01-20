@@ -5,6 +5,8 @@ describe 'bulk_processor namespace' do
   describe 'bulk_processor:start' do
     let(:job) { instance_double(BulkProcessor::Job, perform: true) }
 
+    before(:all) { Rake::Task.define_task(:environment) }
+
     before { allow(BulkProcessor::Job).to receive(:new).and_return(job) }
 
     it 'starts the job' do
