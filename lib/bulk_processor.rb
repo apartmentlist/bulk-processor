@@ -1,5 +1,6 @@
 require 'bulk_processor/config'
 require 'bulk_processor/job'
+require 'bulk_processor/s3_file'
 require 'bulk_processor/stream_encoder'
 require 'bulk_processor/validated_csv'
 require 'bulk_processor/version'
