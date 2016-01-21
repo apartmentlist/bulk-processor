@@ -24,7 +24,7 @@ class BulkProcessor
     # the file outside of the block will fail.
     #
     # @yields [File] a local copy of the remote file
-    def read
+    def open
       with_temp_file do |local_file|
         client.get_object({ bucket: bucket, key: key }, target: local_file)
         local_file.rewind

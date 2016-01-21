@@ -37,7 +37,7 @@ BulkProcessor.aws.bucket = 'my-s3-bucket'
 ```
 
 The default queue_adapter is `:inline`, which skips queueing and processes synchronously. Since
-this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ),
+this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ) are supported,
 including `:resque`.
 
 The CSV file passed to BulkProcessor will be persisted on AWS S3 so that the job

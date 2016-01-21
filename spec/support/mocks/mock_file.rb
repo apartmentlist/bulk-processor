@@ -30,7 +30,7 @@ class MockFile
     full_path
   end
 
-  def read
+  def open
     raise 'File does not exist' unless exists?
     with_temp_file do |local_file|
       File.open(full_path, 'r') do |file|

@@ -29,7 +29,7 @@ describe BulkProcessor do
     it 'persists the file' do
       contents = 'deadbeef'
       subject.start(file_class: MockFile)
-      MockFile.new('file.csv').read do |file|
+      MockFile.new('file.csv').open do |file|
         contents = file.read
       end
       expect(contents).to eq("name\nRex")

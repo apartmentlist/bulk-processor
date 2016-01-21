@@ -7,7 +7,7 @@ class BulkProcessor
 
     def perform(processor_class, payload, file_class, key)
       file = file_class.constantize.new(key)
-      file.read do |f|
+      file.open do |f|
         csv = CSV.parse(f.read, headers: true)
         processor = processor_class.constantize.new(csv, payload: payload)
         processor.start

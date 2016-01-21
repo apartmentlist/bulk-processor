@@ -46,11 +46,11 @@ describe BulkProcessor::S3File do
     end
   end
 
-  describe '#read' do
+  describe '#open' do
     it 'gets the object from the bucket with the correct key' do
       expect(s3_client).to receive(:get_object)
         .with({ bucket: bucket, key: modified_key }, anything)
-      subject.read {}
+      subject.open {}
     end
 
     it 'yields a local copy of the remote file' do
@@ -59,7 +59,7 @@ describe BulkProcessor::S3File do
       end
 
       yielded_contents = 'deadbeef'
-      subject.read do |file|
+      subject.open do |file|
         yielded_contents = file.read
       end
       expect(yielded_contents).to eq('test file contents')

@@ -20,7 +20,7 @@ describe BulkProcessor::CSVProcessor::RowProcessor do
   describe '#result' do
     subject do
       row = CSV.parse("name,ssn\n#{name},0", headers: true).first
-      TestRowProcessor.new(row, row_num: 3, payload: {})
+      TestRowProcessor.new(row, row_num: 0, payload: {})
     end
 
     let(:name) { 'Fred' }
