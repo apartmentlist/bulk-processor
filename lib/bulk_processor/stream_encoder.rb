@@ -2,7 +2,7 @@ class BulkProcessor
   # Force encode a stream into UTF-8 by removing invalid and undefined
   # characters.
   class StreamEncoder
-    ENCODING_OPTIONS = { undef: :replace, invalid: :replace, replace: '' }
+    ENCODING_OPTIONS = { undef: :replace, invalid: :replace, replace: '' }.freeze
     private_constant :ENCODING_OPTIONS
 
     def initialize(stream)

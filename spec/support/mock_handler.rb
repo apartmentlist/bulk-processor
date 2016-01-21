@@ -1,5 +1,5 @@
 class MockHandler
-  def initialize(payload:, successes:, errors:)
+  def initialize(payload:, results:)
   end
 
   def complete!

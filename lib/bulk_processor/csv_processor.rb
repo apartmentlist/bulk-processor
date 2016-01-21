@@ -1,4 +1,7 @@
-require_relative 'no_op_handler'
+require_relative 'csv_processor/no_op_handler'
+require_relative 'csv_processor/no_op_post_processor'
+require_relative 'csv_processor/result'
+require_relative 'csv_processor/row_processor'
 
 class BulkProcessor
   # An abstract implmentation of the CSVProcessor role. Provides
@@ -9,7 +12,7 @@ class BulkProcessor
   #
   # The common use case cover by this class' implementation of `#start` is
   #
-  #   1. Iteratively process each record
+  #   1. Iteratively process each row
   #   2. Accumulate the results (did the processing succeed? what were the error
   #      messages?)
   #   3. Send the results to an instance of the Handler role.
@@ -26,6 +29,12 @@ class BulkProcessor
   # The `required_columns` method must still be implemented in a subclass
   #
   class CSVProcessor
+    # Since the first data column in a CSV is row 2, but will have index 0 in
+    # the items array, we need to offset the index by 2 when we add a row
+    # identifier to all error messages.
+    FIRST_ROW_OFFSET = 2
+    private_constant :FIRST_ROW_OFFSET
+
     # @return [RowProcessor] a class that implements the RowProcessor interface
     def self.row_processor_class
       raise NotImplementedError,
@@ -35,6 +44,11 @@ class BulkProcessor
     # @return [Handler] a class that implements the Handler role
     def self.handler_class
       NoOpHandler
+    end
+
+    # @return [PostProcessor] a class that implements the PostProcessor role
+    def self.post_processor_class
+      NoOpPostProcessor
     end
 
     # @return [Array<String>] column headers that must be present
@@ -51,27 +65,22 @@ class BulkProcessor
       []
     end
 
-    def initialize(records, payload: {})
-      @records = records
+    def initialize(csv, payload: {})
       @payload = payload
-      @successes = {}
-      @errors = {}
+      @row_processors = csv.map.with_index(&method(:row_processor))
+      @results = []
     end
 
-    # Iteratively process each record, accumulate the results, and pass those
-    # off to the handler. If an unrescued error is raised for any record,
-    # processing will halt for all remaining records and the `#fail!` will be
+    # Iteratively process each row, accumulate the results, and pass those
+    # off to the handler. If an unrescued error is raised for any row,
+    # processing will halt for all remaining rows and the `#fail!` will be
     # invoked on the handler.
     def start
-      records.each_with_index do |record, index|
-        processor = row_processor(record)
+      row_processors.each do |processor|
         processor.process!
-        if processor.success?
-          successes[index] = processor.messages
-        else
-          errors[index] = processor.messages
-        end
+        results << processor.result
       end
+      post_processes
       handler.complete!
     rescue Exception => exception
       handler.fail!(exception)
@@ -84,15 +93,21 @@ class BulkProcessor
 
     private
 
-    attr_reader :records, :payload, :successes, :errors
+    attr_reader :row_processors, :payload, :results
 
     def handler
-      self.class.handler_class.new(payload: payload, successes: successes,
-                                   errors: errors)
+      self.class.handler_class.new(payload: payload, results: results)
     end
 
-    def row_processor(record)
-      self.class.row_processor_class.new(record, payload: payload)
+    def row_processor(row, index)
+      row_num = index + FIRST_ROW_OFFSET
+      self.class.row_processor_class.new(row, row_num: row_num, payload: payload)
+    end
+
+    def post_processes
+      post_processor = self.class.post_processor_class.new(row_processors)
+      post_processor.start
+      results.concat(post_processor.results)
     end
   end
 end
