@@ -65,7 +65,7 @@ The CSV file passed to BulkProcessor will be persisted on AWS S3 so that the job
 can access it. This requires configuring AWS credentials, the S3 bucket in which
 to store the file, and a local temp directory to hold the file locally.
 
-### Setting up the processor and handler
+### Setting up the processor
 
 You will need to supply a class for CSV processing. This class must respond to the
 `start` instance method, the `required_columns` and `optional_columns` class methods,
@@ -226,6 +226,67 @@ if processor.start
 else
   # Something went wrong, alert the file uploader
   handle_invalid_file(processor.errors)
+end
+```
+
+#### Parallelization
+
+For larger CSV files, you may wish to process rows in parallel. This gem allows
+you to scale up to an arbitrary number of parallel processes by providing an optional
+argument to `#start`. Doing this will cause the input CSV file to be split into
+*N* number of smaller CSV files, each one being processed in separate processes.
+It is important to note that the file *must* be sorted by the boundary column for
+it to deliver on its promise.
+
+```ruby
+processor = BulkProcessor.new(
+              key: file_name,
+              stream: file_stream,
+              processor_class: PetCSVProcessor,
+              payload: { recipient: current_user.email }
+            )
+if processor.start(5)
+  # Split the main CSV into 5 smaller files and process in parallel.
+else
+  # Something went wrong, alert the file uploader
+  handle_invalid_file(processor.errors)
+end
+```
+
+By default, the file will be split into equal-sized partitions. If you need the partitions
+to keep all rows with the same value for a column into the same partition, define `.boundary_column`
+on the processor class to return the name of that column. E.g.
+
+```csv
+pet_id,meal,mead_date
+1,kibble,2015-11-02
+1,bits,2015-11-03
+...
+1,alpo,2015-12-31
+2,alpo,2015-11-01
+...
+```
+
+```ruby
+class PetCSVProcessor
+  def self.boundary_column
+    'pet_id'
+  end
+  ...
+end
+```
+
+Finally, to be notified of any failures in the splitting process, you can define
+`.handler_class` on your processor class to return a class that implements the Handler role.
+If an error is raised in the splitting, `#fail!` will be called on the Handler with
+the error.
+
+```ruby
+class PetCSVProcessor
+  def self.handler_class
+    PetHandler
+  end
+  ...
 end
 ```
 

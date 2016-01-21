@@ -1,9 +1,11 @@
 describe BulkProcessor::BackEnd::Dynosaur do
+  it_behaves_like 'a role', 'BackEnd'
+
   describe '.new' do
     it 'configures Dynosaur::Client::HerokuClient' do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
-        payload: { foo: 'bar' },
+        payload: 'foo=bar',
         key: 'file.csv'
       )
       expect(Dynosaur::Client::HerokuClient.api_key).to eq('test-api-key')
@@ -15,7 +17,7 @@ describe BulkProcessor::BackEnd::Dynosaur do
     subject do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
-        payload: { foo: 'bar' },
+        payload: 'foo=bar',
         key: 'file.csv'
       )
     end

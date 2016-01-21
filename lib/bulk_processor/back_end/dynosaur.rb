@@ -13,11 +13,15 @@ class BulkProcessor
       def start
         args = {
           task: 'bulk_processor:start',
-          args: [
-            processor_class.name,
-            PayloadSerializer.serialize(payload),
-            key
-          ]
+          args: [processor_class.name, payload, key]
+        }
+        ::Dynosaur::Process::Heroku.new(args).start
+      end
+
+      def split(num_processes)
+        args = {
+          task: 'bulk_processor:split',
+          args: [processor_class.name, payload, key, num_processes]
         }
         ::Dynosaur::Process::Heroku.new(args).start
       end

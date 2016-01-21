@@ -8,11 +8,12 @@ class BulkProcessor
       end
 
       def start
-        Job::ProcessCSV.perform_later(
-          processor_class.name,
-          PayloadSerializer.serialize(payload),
-          key
-        )
+        Job::ProcessCSV.perform_later(processor_class.name, payload, key)
+      end
+
+      def split(num_processes)
+        Job::SplitCSV.perform_later(processor_class.name, payload,
+                                    key, num_processes)
       end
 
       private

@@ -1,9 +1,11 @@
 describe BulkProcessor::BackEnd::ActiveJob do
+  it_behaves_like 'a role', 'BackEnd'
+
   describe '#start' do
     subject do
       BulkProcessor::BackEnd::ActiveJob.new(
         processor_class: MockCSVProcessor,
-        payload: { foo: 'bar' },
+        payload: 'foo=bar',
         key: 'file.csv'
       )
     end
