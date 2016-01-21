@@ -1,3 +1,6 @@
+require 'bulk_processor/back_end'
+require 'bulk_processor/back_end/active_job'
+require 'bulk_processor/back_end/dynosaur'
 require 'bulk_processor/config'
 require 'bulk_processor/job'
 require 'bulk_processor/s3_file'
@@ -43,7 +46,7 @@ class BulkProcessor
     )
 
     if csv.valid?
-      perform_later(file_class, encoded_contents)
+      start_backend(file_class, encoded_contents)
     else
       errors.concat(csv.errors)
     end
@@ -54,10 +57,11 @@ class BulkProcessor
 
   attr_reader :key, :stream, :processor_class, :payload
 
-  def perform_later(file_class, contents)
+  def start_backend(file_class, contents)
     file = file_class.new(key)
     file.write(contents)
-    Job.perform_later(processor_class.name, payload, file_class.name, key)
+    BackEnd.start(processor_class: processor_class, payload: payload,
+                  file_class: file_class, key: key)
   rescue Exception
     # Clean up the file, which is treated as a lock, if we bail out of here
     # unexpectedly.
