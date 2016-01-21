@@ -1,5 +1,10 @@
 class BulkProcessor
   module RowChunker
+    # Determine the partitions that ensure all consecutive rows with the same
+    # value for boundary_column are in the same partion. The CSV must be sorted
+    # on this column to get the desired results. This class makes an attempt to
+    # keep the partion sizes equal, but obviously prioritizes the boundary
+    # column values over partition size.
     class Boundary
       def initialize(num_chunks, boundary_column:)
         @num_chunks = num_chunks
@@ -8,6 +13,7 @@ class BulkProcessor
 
       def ranges_for(csv)
         @ranges ||= begin
+          # Start with a balanced partition, then make adjustments from there
           chunker = Balanced.new(num_chunks)
           adjust_for_boundaries(chunker.ranges_for(csv), csv)
         end

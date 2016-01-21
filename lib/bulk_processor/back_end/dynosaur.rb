@@ -2,6 +2,7 @@ require 'dynosaur'
 
 class BulkProcessor
   module BackEnd
+    # Execute jobs via rake tasks that will spawn a new Heroku dyno
     class Dynosaur
       def initialize(processor_class:, payload:, key:)
         @processor_class = processor_class

@@ -1,5 +1,7 @@
 class BulkProcessor
   module RowChunker
+    # Determine the partitions for a balanced break up of the input CSV file.
+    # All partitions will have a size within 1 row of every other partition.
     class Balanced
       def initialize(num_chunks)
         @num_chunks = num_chunks

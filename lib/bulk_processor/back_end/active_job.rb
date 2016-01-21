@@ -1,5 +1,6 @@
 class BulkProcessor
   module BackEnd
+    # Execute jobs via ActiveJob, e.g. Resque
     class ActiveJob
       def initialize(processor_class:, payload:, key:)
         @processor_class = processor_class
