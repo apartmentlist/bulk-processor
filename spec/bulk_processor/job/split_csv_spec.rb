@@ -28,9 +28,23 @@ describe BulkProcessor::Job::SplitCSV do
       end
 
       context 'when starting a processing job raises an error' do
+        let(:handler) { instance_double(BulkProcessor::Role::Handler, fail!: true) }
+        let(:error) { StandardError.new('Uh oh!') }
+
         before do
-          allow(BulkProcessor::BackEnd).to receive(:start)
-            .and_raise(StandardError, 'Uh oh!')
+          allow(MockCSVProcessor).to receive(:handler).and_return(MockHandler)
+          payload = { 'key' => 'file.csv', 'other' => 'data' }
+          allow(MockHandler).to receive(:new).with(payload: payload, results: [])
+            .and_return(handler)
+          allow(BulkProcessor::BackEnd).to receive(:start).and_raise(error)
+        end
+
+        it 'handles the error' do
+          begin
+            expect(handler).to receive(:fail!).with(error)
+            subject.perform('MockCSVProcessor', 'other=data', 'file.csv', 2)
+          rescue
+          end
         end
 
         it 'removes the file' do

@@ -17,6 +17,7 @@ class BulkProcessor
         end
       rescue Exception => error
         if processor_class.respond_to?(:handler_class)
+          payload = payload.merge('key' => key)
           handler = processor_class.handler_class.new(payload: payload, results: [])
           handler.fail!(error)
         end

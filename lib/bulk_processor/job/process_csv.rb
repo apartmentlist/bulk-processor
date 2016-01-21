@@ -8,7 +8,7 @@ class BulkProcessor
 
       def perform(processor_class, payload, key)
         file = BulkProcessor.config.file_class.new(key)
-        payload = PayloadSerializer.deserialize(payload)
+        payload = PayloadSerializer.deserialize(payload).merge('key' => key)
         file.open do |f|
           csv = CSV.parse(f.read, headers: true)
           processor = processor_class.constantize.new(csv, payload: payload)
