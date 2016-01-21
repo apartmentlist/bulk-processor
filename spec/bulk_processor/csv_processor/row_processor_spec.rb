@@ -32,7 +32,7 @@ describe BulkProcessor::CSVProcessor::RowProcessor do
     end
 
     it 'includes the row num' do
-      expect(subject.result.row_num).to eq(3)
+      expect(subject.result.row_num).to eq(0)
     end
 
     it 'includes the primary attributes' do
