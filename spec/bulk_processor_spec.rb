@@ -49,7 +49,7 @@ describe BulkProcessor do
 
       it 'enqueues a job' do
         expect(BulkProcessor::Job).to receive(:perform_later)
-          .with('MockCSVProcessor', '{}', 'file.csv')
+          .with('MockCSVProcessor', '', 'file.csv')
         subject.start
       end
     end
@@ -68,7 +68,7 @@ describe BulkProcessor do
       it 'initializes a Dynosaur dyno with the correct args' do
         args = {
           task: 'bulk_processor:start',
-          args: ['MockCSVProcessor', '{}', 'file.csv']
+          args: ['MockCSVProcessor', '', 'file.csv']
         }
         expect(Dynosaur::Process::Heroku).to receive(:new).with(args).and_return(dyno)
         subject.start

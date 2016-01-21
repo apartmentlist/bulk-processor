@@ -24,6 +24,7 @@ success or failure report
   spec.add_runtime_dependency 'activejob', '~> 4'
   spec.add_runtime_dependency 'aws-sdk', '~> 2.1'
   spec.add_runtime_dependency 'dynosaur', '~> 0.2.1'
+  spec.add_runtime_dependency 'rack', '~> 1.5'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'pry-byebug', '~> 3'

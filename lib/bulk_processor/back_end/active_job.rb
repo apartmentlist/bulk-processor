@@ -8,7 +8,11 @@ class BulkProcessor
       end
 
       def start
-        Job.perform_later(processor_class.name, payload.to_json, key)
+        Job.perform_later(
+          processor_class.name,
+          PayloadSerializer.serialize(payload),
+          key
+        )
       end
 
       private
