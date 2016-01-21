@@ -164,7 +164,7 @@ class PetHandler
 
   # Notify the owner that their pets were processed
   def complete!
-    OwnerMailer.competed(results, payload)
+    OwnerMailer.completed(results, payload)
   end
 
   # Notify the owner that processing failed
