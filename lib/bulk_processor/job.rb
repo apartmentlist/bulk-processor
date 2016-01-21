@@ -5,8 +5,8 @@ class BulkProcessor
   class Job < ActiveJob::Base
     queue_as 'bulk_processor'
 
-    def perform(processor_class, payload, file_class, key)
-      file = file_class.constantize.new(key)
+    def perform(processor_class, payload, key)
+      file = BulkProcessor.config.file_class.new(key)
       payload = PayloadSerializer.deserialize(payload)
       file.open do |f|
         csv = CSV.parse(f.read, headers: true)

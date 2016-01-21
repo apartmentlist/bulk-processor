@@ -16,11 +16,11 @@ describe BulkProcessor::Job do
 
     it 'starts a new CSVProcessor instance' do
       expect(csv_processor).to receive(:start)
-      subject.perform('MockCSVProcessor', 'other=data', 'MockFile', 'file.csv')
+      subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
     end
 
     it 'removes the file' do
-      subject.perform('MockCSVProcessor', 'other=data', 'MockFile', 'file.csv')
+      subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
       expect(MockFile.new('file.csv')).to_not exist
     end
 
@@ -31,7 +31,7 @@ describe BulkProcessor::Job do
 
       it 'removes the file' do
         begin
-          subject.perform('MockCSVProcessor', 'other=data', 'MockFile', 'file.csv')
+          subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
           expect(MockFile.new('file.csv')).to_not exist
         rescue
         end

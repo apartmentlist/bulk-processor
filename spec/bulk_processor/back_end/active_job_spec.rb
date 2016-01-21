@@ -4,14 +4,13 @@ describe BulkProcessor::BackEnd::ActiveJob do
       BulkProcessor::BackEnd::ActiveJob.new(
         processor_class: MockCSVProcessor,
         payload: { foo: 'bar' },
-        file_class: MockFile,
         key: 'file.csv'
       )
     end
 
     it 'enqueues an ActiveJob' do
       expect(BulkProcessor::Job).to receive(:perform_later)
-        .with('MockCSVProcessor', 'foo=bar', 'MockFile', 'file.csv')
+        .with('MockCSVProcessor', 'foo=bar', 'file.csv')
       subject.start
     end
   end

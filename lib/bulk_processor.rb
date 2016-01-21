@@ -32,8 +32,8 @@ class BulkProcessor
   end
 
   # Validate the CSV and enqueue if for processing in the background.
-  def start(file_class: S3File)
-    if file_class.new(key).exists?
+  def start
+    if BulkProcessor.config.file_class.new(key).exists?
       errors << "Already processing #{key}, please wait for it to finish"
       return false
     end
@@ -47,7 +47,7 @@ class BulkProcessor
     )
 
     if csv.valid?
-      start_backend(file_class, encoded_contents)
+      start_backend(encoded_contents)
     else
       errors.concat(csv.errors)
     end
@@ -58,11 +58,10 @@ class BulkProcessor
 
   attr_reader :key, :stream, :processor_class, :payload
 
-  def start_backend(file_class, contents)
-    file = file_class.new(key)
+  def start_backend(contents)
+    file = BulkProcessor.config.file_class.new(key)
     file.write(contents)
-    BackEnd.start(processor_class: processor_class, payload: payload,
-                  file_class: file_class, key: key)
+    BackEnd.start(processor_class: processor_class, payload: payload, key: key)
   rescue Exception
     # Clean up the file, which is treated as a lock, if we bail out of here
     # unexpectedly.
