@@ -14,7 +14,12 @@ class BulkProcessor
       def start
         args = {
           task: 'bulk_processor:start',
-          args: [processor_class.name, payload.to_json, file_class.name, key]
+          args: [
+            processor_class.name,
+            PayloadSerializer.serialize(payload),
+            file_class.name,
+            key
+          ]
         }
         ::Dynosaur::Process::Heroku.new(args).start
       end

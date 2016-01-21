@@ -3,7 +3,7 @@ describe BulkProcessor::BackEnd::Dynosaur do
     it 'configures Dynosaur::Client::HerokuClient' do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
-        payload: {},
+        payload: { foo: 'bar' },
         file_class: MockFile,
         key: 'file.csv'
       )
@@ -16,7 +16,7 @@ describe BulkProcessor::BackEnd::Dynosaur do
     subject do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
-        payload: {},
+        payload: { foo: 'bar' },
         file_class: MockFile,
         key: 'file.csv'
       )
@@ -31,7 +31,7 @@ describe BulkProcessor::BackEnd::Dynosaur do
     it 'initializes a Dynosaur dyno with the correct args' do
       args = {
         task: 'bulk_processor:start',
-        args: ['MockCSVProcessor', '{}', 'MockFile', 'file.csv']
+        args: ['MockCSVProcessor', 'foo=bar', 'MockFile', 'file.csv']
       }
       expect(Dynosaur::Process::Heroku).to receive(:new).with(args).and_return(dyno)
       subject.start
