@@ -54,7 +54,7 @@ class BulkProcessor
       # @return [Hash<String, String>] the set of primary keys and their values
       #   for this row
       def primary_attrs
-        row.slice(*primary_keys)
+        row.to_hash.slice(*primary_keys)
       end
     end
   end

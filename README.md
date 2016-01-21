@@ -24,17 +24,29 @@ Or install it yourself as:
 
 ## Usage
 
+### Configuration
+
 Bulk processor requires the following configuration
 
 ```ruby
 BulkProcessor.queue_adapter = <adapter>
+BulkProcessor.temp_directory = '/tmp'
+BulkProcessor.aws.access_key_id = 'my-aws-access-key'
+BulkProcessor.aws.secret_access_key = 'my-aws-secret'
+BulkProcessor.aws.bucket = 'my-s3-bucket'
 ```
 
-The default is `:inline`, which skips queueing and processes synchronously. Since
-this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ),
+The default queue_adapter is `:inline`, which skips queueing and processes synchronously. Since
+this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( http://api.rubyonrails.org/classes/ActiveJob/QueueAdapters.html ) are supported,
 including `:resque`.
 
-You will also need to supply a class for CSV processing. This class must respond to the
+The CSV file passed to BulkProcessor will be persisted on AWS S3 so that the job
+can access it. This requires configuring AWS credentials, the S3 bucket in which
+to store the file, and a local temp directory to hold the file locally.
+
+### Setting up the processor and handler
+
+You will need to supply a class for CSV processing. This class must respond to the
 `start` instance method, the `required_columns` and `optional_columns` class methods,
 and have the following signature for initialize:
 
@@ -61,6 +73,8 @@ class PetCSVProcessor
   end
 end
 ```
+
+#### Swiss Army Knife base class
 
 To account for a common use case, a base `BulkProcessor::CSVProcessor` class is provided,
 though it must be explicitly required. This base class can be subclassed to build a CSV processor.
@@ -177,10 +191,11 @@ class PetHandler
 end
 ```
 
-Putting it all together
+### Kicking off the process
 
 ```ruby
 processor = BulkProcessor.new(
+              key: file_name,
               stream: file_stream,
               processor_class: PetCSVProcessor,
               payload: { recipient: current_user.email }
