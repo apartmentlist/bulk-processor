@@ -3,10 +3,9 @@ require 'dynosaur'
 class BulkProcessor
   module BackEnd
     class Dynosaur
-      def initialize(processor_class:, payload:, file_class:, key:)
+      def initialize(processor_class:, payload:, key:)
         @processor_class = processor_class
         @payload = payload
-        @file_class = file_class
         @key = key
         configure_dynosaur
       end
@@ -14,14 +13,14 @@ class BulkProcessor
       def start
         args = {
           task: 'bulk_processor:start',
-          args: [processor_class.name, payload.to_json, file_class.name, key]
+          args: [processor_class.name, payload.to_json, key]
         }
         ::Dynosaur::Process::Heroku.new(args).start
       end
 
       private
 
-      attr_reader :processor_class, :payload, :file_class, :key
+      attr_reader :processor_class, :payload, :key
 
       def configure_dynosaur
         ::Dynosaur::Client::HerokuClient.configure do |config|

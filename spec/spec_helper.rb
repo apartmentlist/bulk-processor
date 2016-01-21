@@ -8,6 +8,7 @@ require 'bulk_processor'
 Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }
 
 BulkProcessor.configure do |config|
+  config.file_class = MockFile
   config.back_end = :active_job
   config.queue_adapter = :test
   config.temp_directory = File.dirname(File.dirname(__FILE__))

@@ -1,11 +1,10 @@
 class BulkProcessor
   module BackEnd
     class << self
-      def start(processor_class:, payload:, file_class:, key:)
+      def start(processor_class:, payload:, key:)
         back_end = back_end_class.new(
           processor_class: processor_class,
           payload: payload,
-          file_class: file_class,
           key: key
         )
         back_end.start

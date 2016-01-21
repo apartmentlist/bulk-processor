@@ -11,10 +11,10 @@ describe 'bulk_processor namespace' do
 
     it 'starts the job' do
       expect(job).to receive(:perform)
-        .with('MockCSVProcessor', '{"foo":"bar"}', 'MockFile', 'file.csv')
+        .with('MockCSVProcessor', '{"foo":"bar"}', 'file.csv')
       Rake::Task['bulk_processor:start'].reenable # allows multiple calls
       rake_cmd =
-        'bulk_processor:start[MockCSVProcessor,{"foo":"bar"},MockFile,file.csv]'
+        'bulk_processor:start[MockCSVProcessor,{"foo":"bar"},file.csv]'
       Rake.application.invoke_task(rake_cmd)
     end
   end

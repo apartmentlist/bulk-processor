@@ -28,7 +28,7 @@ describe BulkProcessor do
 
     it 'persists the file' do
       contents = 'deadbeef'
-      subject.start(file_class: MockFile)
+      subject.start
       MockFile.new('file.csv').open do |file|
         contents = file.read
       end
@@ -36,7 +36,7 @@ describe BulkProcessor do
     end
 
     it 'returns true' do
-      expect(subject.start(file_class: MockFile)).to eq(true)
+      expect(subject.start).to eq(true)
     end
 
     context 'when using the :active_job back end' do
@@ -49,8 +49,8 @@ describe BulkProcessor do
 
       it 'enqueues a job' do
         expect(BulkProcessor::Job).to receive(:perform_later)
-          .with('MockCSVProcessor', '{}', 'MockFile', 'file.csv')
-        subject.start(file_class: MockFile)
+          .with('MockCSVProcessor', '{}', 'file.csv')
+        subject.start
       end
     end
 
@@ -68,15 +68,15 @@ describe BulkProcessor do
       it 'initializes a Dynosaur dyno with the correct args' do
         args = {
           task: 'bulk_processor:start',
-          args: ['MockCSVProcessor', '{}', 'MockFile', 'file.csv']
+          args: ['MockCSVProcessor', '{}', 'file.csv']
         }
         expect(Dynosaur::Process::Heroku).to receive(:new).with(args).and_return(dyno)
-        subject.start(file_class: MockFile)
+        subject.start
       end
 
       it 'starts a Dynosaur dyno' do
         expect(dyno).to receive(:start)
-        subject.start(file_class: MockFile)
+        subject.start
       end
     end
 
@@ -87,7 +87,7 @@ describe BulkProcessor do
       end
 
       it 'removes the file' do
-        subject.start(file_class: MockFile) rescue nil
+        subject.start rescue nil
         expect(MockFile.new('file.csv').exists?).to eq(false)
       end
     end
@@ -97,16 +97,16 @@ describe BulkProcessor do
 
       it 'does not enqueue a job' do
         expect(BulkProcessor::Job).to receive(:perform_later).never
-        subject.start(file_class: MockFile)
+        subject.start
       end
 
       it 'returns false' do
-        expect(subject.start(file_class: MockFile)).to eq(false)
+        expect(subject.start).to eq(false)
       end
 
       it 'adds a useful error' do
         message = 'Already processing file.csv, please wait for it to finish'
-        subject.start(file_class: MockFile)
+        subject.start
         expect(subject.errors).to include(message)
       end
     end
@@ -116,7 +116,7 @@ describe BulkProcessor do
         let(:required_columns) { ['foo'] }
 
         it 'rejects the file with errors and payload' do
-          expect(subject.start(file_class: MockFile)).to eq(false)
+          expect(subject.start).to eq(false)
           expect(subject.errors).to include('Missing required column(s): foo')
         end
       end
@@ -127,7 +127,7 @@ describe BulkProcessor do
         it 'rejects the file with errors' do
           message = 'Unrecognized column(s) found: name'
 
-          expect(subject.start(file_class: MockFile)).to eq(false)
+          expect(subject.start).to eq(false)
           expect(subject.errors).to include(message)
         end
       end
@@ -138,7 +138,7 @@ describe BulkProcessor do
         it 'rejects the file with errors' do
           message = 'Missing or malformed column header, is one of them blank?'
 
-          expect(subject.start(file_class: MockFile)).to eq(false)
+          expect(subject.start).to eq(false)
           expect(subject.errors).to include(message)
         end
       end
@@ -153,7 +153,7 @@ describe BulkProcessor do
       it 'calls #complete! on the handler' do
         perform_enqueued_jobs do
           expect(handler).to receive(:complete!)
-          subject.start(file_class: MockFile)
+          subject.start
         end
       end
     end
@@ -167,7 +167,7 @@ describe BulkProcessor do
       it 'calls #fail! with the fatal error' do
         perform_enqueued_jobs do
           expect(handler).to receive(:fail!).with(instance_of(StandardError))
-          subject.start(file_class: MockFile)
+          subject.start
         end
       end
     end
@@ -182,7 +182,7 @@ describe BulkProcessor do
         perform_enqueued_jobs do
           begin
             expect(handler).to receive(:fail!).with(instance_of(SignalException))
-            subject.start(file_class: MockFile)
+            subject.start
           rescue SignalException
           end
         end

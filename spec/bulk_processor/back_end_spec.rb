@@ -4,7 +4,6 @@ describe BulkProcessor::BackEnd do
       {
         processor_class: MockCSVProcessor,
         payload: { foo: 'bar' },
-        file_class: MockFile,
         key: 'file.csv'
       }
     end
