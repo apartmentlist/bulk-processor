@@ -9,7 +9,7 @@ describe BulkProcessor::BackEnd::ActiveJob do
     end
 
     it 'enqueues an ActiveJob' do
-      expect(BulkProcessor::Job).to receive(:perform_later)
+      expect(BulkProcessor::Job::ProcessCSV).to receive(:perform_later)
         .with('MockCSVProcessor', 'foo=bar', 'file.csv')
       subject.start
     end

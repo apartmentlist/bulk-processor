@@ -8,7 +8,7 @@ class BulkProcessor
       end
 
       def start
-        Job.perform_later(
+        Job::ProcessCSV.perform_later(
           processor_class.name,
           PayloadSerializer.serialize(payload),
           key

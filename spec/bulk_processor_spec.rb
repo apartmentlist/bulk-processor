@@ -48,7 +48,7 @@ describe BulkProcessor do
       after { BulkProcessor.config.back_end = @back_end }
 
       it 'enqueues a job' do
-        expect(BulkProcessor::Job).to receive(:perform_later)
+        expect(BulkProcessor::Job::ProcessCSV).to receive(:perform_later)
           .with('MockCSVProcessor', '', 'file.csv')
         subject.start
       end
@@ -82,7 +82,7 @@ describe BulkProcessor do
 
     context 'when there is an error enqueuing the job' do
       before do
-        allow(BulkProcessor::Job).to receive(:perform_later)
+        allow(BulkProcessor::Job::ProcessCSV).to receive(:perform_later)
           .and_raise(StandardError, 'Uh oh!')
       end
 
@@ -96,7 +96,7 @@ describe BulkProcessor do
       before { MockFile.new('file.csv').write(csv_str) }
 
       it 'does not enqueue a job' do
-        expect(BulkProcessor::Job).to receive(:perform_later).never
+        expect(BulkProcessor::Job::ProcessCSV).to receive(:perform_later).never
         subject.start
       end
 

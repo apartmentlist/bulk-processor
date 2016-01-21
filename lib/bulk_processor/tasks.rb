@@ -8,7 +8,7 @@ class BulkProcessor
       namespace :bulk_processor do
         desc 'Start processing a CSV file'
         task :start, [:processor_class, :payload, :key] => :environment do |_task, args|
-          Job.new.perform(
+          Job::ProcessCSV.new.perform(
             args[:processor_class],
             args[:payload],
             args[:key]

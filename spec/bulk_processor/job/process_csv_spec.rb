@@ -1,4 +1,4 @@
-describe BulkProcessor::Job do
+describe BulkProcessor::Job::ProcessCSV do
   describe '#perform' do
     let(:csv_processor) { instance_double(BulkProcessor::Role::CSVProcessor) }
     let(:csv_str) { "species\ndog" }
