@@ -6,11 +6,13 @@ describe BulkProcessor::FileSplitter do
 
     let(:key) { 'foo/test.csv' }
     let(:csv_str) do
-      "property_id,unit_name\n" \
-      "1,A\n" \
-      "2,B\n" \
-      "3,C\n" \
-      "4,D\n" \
+      %w[
+        property_id,unit_name
+        1,A
+        2,B
+        3,C
+        4,D
+      ].join("\n")
     end
     let(:row_chunker) do
       instance_double(BulkProcessor::Role::RowChunker, ranges_for: ranges)

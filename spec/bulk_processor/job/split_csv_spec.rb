@@ -57,7 +57,7 @@ describe BulkProcessor::Job::SplitCSV do
       end
     end
 
-    context 'when the procesor class does not define .boundary_column' do
+    context 'when the processor class does not define .boundary_column' do
       it_behaves_like 'a splitter job'
 
       it 'splits the CSV evenly' do
@@ -71,7 +71,7 @@ describe BulkProcessor::Job::SplitCSV do
       end
     end
 
-    context 'when the procesor class defines .boundary_column' do
+    context 'when the processor class defines .boundary_column' do
       before do
         allow(MockCSVProcessor).to receive(:boundary_column).and_return('pet_id')
       end

@@ -15,7 +15,7 @@ class BulkProcessor
           )
         end
 
-        desc 'Split a CSV file'
+        desc 'Split a CSV file and process each piece'
         task :split, [:processor_class, :payload, :key, :num_chunks] => :environment do |_task, args|
           Job::SplitCSV.new.perform(
             args[:processor_class],
