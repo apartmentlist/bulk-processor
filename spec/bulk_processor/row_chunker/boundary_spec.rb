@@ -11,13 +11,15 @@ describe BulkProcessor::RowChunker::Boundary do
 
     context 'when values differ on either side of the balanced boundary' do
       let(:csv_str) do
-        "user_id\n" \
-        "1\n" \
-        "2\n" \
-        "3\n" \
-        "4\n" \
-        "5\n" \
-        "6\n" \
+        %w[
+          user_id
+          1
+          2
+          3
+          4
+          5
+          6
+        ].join("\n")
       end
 
       it 'breaks the main array into the correct number of ranges' do
@@ -32,13 +34,15 @@ describe BulkProcessor::RowChunker::Boundary do
 
     context 'when values are the same on either side of a balanced boundary' do
       let(:csv_str) do
-        "user_id\n" \
-        "1\n" \
-        "2\n" \
-        "3\n" \
-        "3\n" \
-        "4\n" \
-        "5\n" \
+        %w[
+          user_id
+          1
+          2
+          3
+          3
+          4
+          5
+        ].join("\n")
       end
 
       it 'breaks the main array into the correct number of ranges' do
