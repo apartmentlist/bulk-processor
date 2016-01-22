@@ -4,7 +4,7 @@ class BulkProcessor
       def start(processor_class:, payload:, key:, num_processes: 1)
         back_end = back_end_class.new(
           processor_class: processor_class,
-          payload: PayloadSerializer.serialize(payload),
+          payload: payload,
           key: key
         )
         num_processes > 1 ? back_end.split(num_processes) : back_end.start

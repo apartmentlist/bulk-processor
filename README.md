@@ -30,6 +30,15 @@ Bulk processor requires the following configuration
 
 #### Back end: ActiveJob
 
+Include the `activejob` and back-end queueing gems in your Gemfile, e.g.
+
+```ruby
+# Gemfile
+gem 'activejob'
+gem 'bulk-processor'
+gem 'resque'
+```
+
 ```ruby
 BulkProcessor.back_end = :active_job
 BulkProcessor.queue_adapter = <adapter>
@@ -40,6 +49,14 @@ this is backed by ActiveJob, all of the adapters in [ActiveJob::QueueAdapters]( 
 including `:resque`.
 
 #### Back end: Dynosaur
+
+Include the `dynosau` gem in your Gemfile, e.g.
+
+```ruby
+# Gemfile
+gem 'dynosaur'
+gem 'resque'
+```
 
 ```ruby
 BulkProcessor.back_end = :dynosaur
