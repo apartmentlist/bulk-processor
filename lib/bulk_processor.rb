@@ -2,8 +2,12 @@ require 'bulk_processor/back_end'
 require 'bulk_processor/back_end/active_job'
 require 'bulk_processor/back_end/dynosaur'
 require 'bulk_processor/config'
-require 'bulk_processor/job'
+require 'bulk_processor/file_splitter'
+require 'bulk_processor/job/process_csv'
+require 'bulk_processor/job/split_csv'
 require 'bulk_processor/payload_serializer'
+require 'bulk_processor/row_chunker/balanced'
+require 'bulk_processor/row_chunker/boundary'
 require 'bulk_processor/s3_file'
 require 'bulk_processor/stream_encoder'
 require 'bulk_processor/validated_csv'
@@ -32,7 +36,7 @@ class BulkProcessor
   end
 
   # Validate the CSV and enqueue if for processing in the background.
-  def start
+  def start(num_processes = 1)
     if BulkProcessor.config.file_class.new(key).exists?
       errors << "Already processing #{key}, please wait for it to finish"
       return false
@@ -47,7 +51,7 @@ class BulkProcessor
     )
 
     if csv.valid?
-      start_backend(encoded_contents)
+      start_backend(encoded_contents, num_processes)
     else
       errors.concat(csv.errors)
     end
@@ -58,10 +62,11 @@ class BulkProcessor
 
   attr_reader :key, :stream, :processor_class, :payload
 
-  def start_backend(contents)
+  def start_backend(contents, num_processes)
     file = BulkProcessor.config.file_class.new(key)
     file.write(contents)
-    BackEnd.start(processor_class: processor_class, payload: payload, key: key)
+    BackEnd.start(processor_class: processor_class, payload: payload, key: key,
+                  num_processes: num_processes)
   rescue Exception
     # Clean up the file, which is treated as a lock, if we bail out of here
     # unexpectedly.

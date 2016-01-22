@@ -1,5 +1,6 @@
 class BulkProcessor
   module BackEnd
+    # Execute jobs via ActiveJob, e.g. Resque
     class ActiveJob
       def initialize(processor_class:, payload:, key:)
         @processor_class = processor_class
@@ -8,11 +9,12 @@ class BulkProcessor
       end
 
       def start
-        Job.perform_later(
-          processor_class.name,
-          PayloadSerializer.serialize(payload),
-          key
-        )
+        Job::ProcessCSV.perform_later(processor_class.name, payload, key)
+      end
+
+      def split(num_processes)
+        Job::SplitCSV.perform_later(processor_class.name, payload,
+                                    key, num_processes)
       end
 
       private

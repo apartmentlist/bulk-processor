@@ -47,10 +47,18 @@ describe BulkProcessor do
 
       after { BulkProcessor.config.back_end = @back_end }
 
-      it 'enqueues a job' do
-        expect(BulkProcessor::Job).to receive(:perform_later)
+      it 'enqueues a process job' do
+        expect(BulkProcessor::Job::ProcessCSV).to receive(:perform_later)
           .with('MockCSVProcessor', '', 'file.csv')
         subject.start
+      end
+
+      context 'when starting with 2 processes' do
+        it 'enqueues a split job' do
+          expect(BulkProcessor::Job::SplitCSV).to receive(:perform_later)
+            .with('MockCSVProcessor', '', 'file.csv', 2)
+          subject.start(2)
+        end
       end
     end
 
@@ -65,7 +73,7 @@ describe BulkProcessor do
 
       after { BulkProcessor.config.back_end = @back_end }
 
-      it 'initializes a Dynosaur dyno with the correct args' do
+      it 'initializes a Dynosaur dyno for a process job' do
         args = {
           task: 'bulk_processor:start',
           args: ['MockCSVProcessor', '', 'file.csv']
@@ -78,11 +86,22 @@ describe BulkProcessor do
         expect(dyno).to receive(:start)
         subject.start
       end
+
+      context 'when starting with 2 processes' do
+        it 'initializes a Dynosaur dyno for a split job' do
+          args = {
+            task: 'bulk_processor:split',
+            args: ['MockCSVProcessor', '', 'file.csv', 2]
+          }
+          expect(Dynosaur::Process::Heroku).to receive(:new).with(args).and_return(dyno)
+          subject.start(2)
+        end
+      end
     end
 
     context 'when there is an error enqueuing the job' do
       before do
-        allow(BulkProcessor::Job).to receive(:perform_later)
+        allow(BulkProcessor::Job::ProcessCSV).to receive(:perform_later)
           .and_raise(StandardError, 'Uh oh!')
       end
 
@@ -96,7 +115,7 @@ describe BulkProcessor do
       before { MockFile.new('file.csv').write(csv_str) }
 
       it 'does not enqueue a job' do
-        expect(BulkProcessor::Job).to receive(:perform_later).never
+        expect(BulkProcessor::Job::ProcessCSV).to receive(:perform_later).never
         subject.start
       end
 

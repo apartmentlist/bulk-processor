@@ -1,8 +1,8 @@
-describe BulkProcessor::Job do
+describe BulkProcessor::Job::ProcessCSV do
   describe '#perform' do
     let(:csv_processor) { instance_double(BulkProcessor::Role::CSVProcessor) }
     let(:csv_str) { "species\ndog" }
-    let(:payload) { { 'other' => 'data' } }
+    let(:payload) { { 'other' => 'data', 'key' => 'file.csv' } }
 
     before do
       MockFile.new('file.csv').write(csv_str)

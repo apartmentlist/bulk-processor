@@ -1,13 +1,13 @@
 class BulkProcessor
   module BackEnd
     class << self
-      def start(processor_class:, payload:, key:)
+      def start(processor_class:, payload:, key:, num_processes: 1)
         back_end = back_end_class.new(
           processor_class: processor_class,
-          payload: payload,
+          payload: PayloadSerializer.serialize(payload),
           key: key
         )
-        back_end.start
+        num_processes > 1 ? back_end.split(num_processes) : back_end.start
       end
 
       private
