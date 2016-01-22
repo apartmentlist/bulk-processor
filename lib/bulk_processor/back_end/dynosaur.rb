@@ -1,7 +1,6 @@
 require 'dynosaur'
 
-require_relative 'dynosaur/process_csv_task'
-require_relative 'dynosaur/split_csv_task'
+require_relative 'dynosaur/tasks'
 
 class BulkProcessor
   module BackEnd

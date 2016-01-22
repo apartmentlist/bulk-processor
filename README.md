@@ -66,7 +66,7 @@ BulkProcessor.heroku.app_name = 'my-heroku-app-name'
 
 ```ruby
 # Rakefile
-require 'bulk_processor/tasks'
+require 'bulk_processor/back_end/dynosaur/tasks'
 ```
 
 #### AWS S3
