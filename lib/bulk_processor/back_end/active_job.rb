@@ -19,7 +19,7 @@ class BulkProcessor
 
       def split(num_processes)
         ActiveJob::SplitCSVJob.perform_later(processor_class, payload, key,
-                                             num_processes.to_s)
+                                             num_processes)
       end
 
       private

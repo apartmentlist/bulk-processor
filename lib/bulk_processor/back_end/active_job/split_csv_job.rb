@@ -10,7 +10,7 @@ class BulkProcessor
             processor_class.constantize,
             PayloadSerializer.deserialize(payload),
             key,
-            num_chunks.to_i
+            num_chunks
           ).perform
         end
       end

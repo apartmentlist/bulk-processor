@@ -12,12 +12,12 @@ describe BulkProcessor::BackEnd::ActiveJob::SplitCSVJob do
       expect(BulkProcessor::SplitCSV).to receive(:new)
         .with(MockCSVProcessor, { 'other' => 'data' }, 'file.csv', 2)
         .and_return(performer)
-      subject.perform('MockCSVProcessor', 'other=data', 'file.csv', '2')
+      subject.perform('MockCSVProcessor', 'other=data', 'file.csv', 2)
     end
 
     it 'starts the performer' do
       expect(performer).to receive(:perform)
-      subject.perform('MockCSVProcessor', 'other=data', 'file.csv', '2')
+      subject.perform('MockCSVProcessor', 'other=data', 'file.csv', 2)
     end
   end
 end

@@ -58,7 +58,7 @@ describe BulkProcessor do
         it 'enqueues a split job' do
           expect(BulkProcessor::BackEnd::ActiveJob::SplitCSVJob)
             .to receive(:perform_later)
-            .with('MockCSVProcessor', '', 'file.csv', '2')
+            .with('MockCSVProcessor', '', 'file.csv', 2)
           subject.start(2)
         end
       end

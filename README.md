@@ -50,7 +50,7 @@ including `:resque`.
 
 #### Back end: Dynosaur
 
-Include the `dynosau` gem in your Gemfile, e.g.
+Include the `dynosaur` gem in your Gemfile, e.g.
 
 ```ruby
 # Gemfile
@@ -67,6 +67,11 @@ BulkProcessor.heroku.app_name = 'my-heroku-app-name'
 ```ruby
 # Rakefile
 require 'bulk_processor/back_end/dynosaur/tasks'
+
+# If you do not already have an :enivronment rake task, create a no-op one as
+# Dynosaur tasks depend on it.
+task :environment
+end
 ```
 
 #### AWS S3
