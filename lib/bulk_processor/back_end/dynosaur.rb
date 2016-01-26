@@ -1,12 +1,14 @@
 require 'dynosaur'
 
+require_relative 'dynosaur/tasks'
+
 class BulkProcessor
   module BackEnd
     # Execute jobs via rake tasks that will spawn a new Heroku dyno
     class Dynosaur
       def initialize(processor_class:, payload:, key:)
-        @processor_class = processor_class
-        @payload = payload
+        @processor_class = processor_class.name
+        @payload = PayloadSerializer.serialize(payload)
         @key = key
         configure_dynosaur
       end
@@ -14,7 +16,7 @@ class BulkProcessor
       def start
         args = {
           task: 'bulk_processor:start',
-          args: [processor_class.name, payload, key]
+          args: [processor_class, payload, key]
         }
         ::Dynosaur::Process::Heroku.new(args).start
       end
@@ -22,7 +24,7 @@ class BulkProcessor
       def split(num_processes)
         args = {
           task: 'bulk_processor:split',
-          args: [processor_class.name, payload, key, num_processes]
+          args: [processor_class, payload, key, num_processes.to_s]
         }
         ::Dynosaur::Process::Heroku.new(args).start
       end

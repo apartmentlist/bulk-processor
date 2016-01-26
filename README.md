@@ -30,6 +30,15 @@ Bulk processor requires the following configuration
 
 #### Back end: ActiveJob
 
+Include the `activejob` and back-end queueing gems in your Gemfile, e.g.
+
+```ruby
+# Gemfile
+gem 'activejob'
+gem 'bulk-processor'
+gem 'resque'
+```
+
 ```ruby
 BulkProcessor.back_end = :active_job
 BulkProcessor.queue_adapter = <adapter>
@@ -41,6 +50,14 @@ including `:resque`.
 
 #### Back end: Dynosaur
 
+Include the `dynosaur` gem in your Gemfile, e.g.
+
+```ruby
+# Gemfile
+gem 'dynosaur'
+gem 'resque'
+```
+
 ```ruby
 BulkProcessor.back_end = :dynosaur
 BulkProcessor.heroku.api_key = 'my-heroku-api-key'
@@ -49,7 +66,12 @@ BulkProcessor.heroku.app_name = 'my-heroku-app-name'
 
 ```ruby
 # Rakefile
-require 'bulk_processor/tasks'
+require 'bulk_processor/back_end/dynosaur/tasks'
+
+# If you do not already have an :enivronment rake task, create a no-op one as
+# Dynosaur tasks depend on it.
+task :environment
+end
 ```
 
 #### AWS S3

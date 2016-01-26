@@ -1,26 +1,30 @@
-describe BulkProcessor::Job::ProcessCSV do
+describe BulkProcessor::ProcessCSV do
   describe '#perform' do
+    subject do
+      BulkProcessor::ProcessCSV.new(MockCSVProcessor, { 'other' => 'data' },
+                                    'file.csv')
+    end
+
     let(:csv_processor) { instance_double(BulkProcessor::Role::CSVProcessor) }
-    let(:csv_str) { "species\ndog" }
-    let(:payload) { { 'other' => 'data', 'key' => 'file.csv' } }
 
     before do
-      MockFile.new('file.csv').write(csv_str)
+      MockFile.new('file.csv').write("species\ndog")
+      allow(MockCSVProcessor).to receive(:new).with(
+        CSV.parse("species\ndog", headers: true),
+        payload: { 'other' => 'data', 'key' => 'file.csv' }
+      ).and_return(csv_processor)
       allow(csv_processor).to receive(:start)
-      allow(MockCSVProcessor).to receive(:new)
-        .with(CSV.parse(csv_str, headers: true), payload: payload)
-        .and_return(csv_processor)
     end
 
     after { MockFile.cleanup }
 
     it 'starts a new CSVProcessor instance' do
       expect(csv_processor).to receive(:start)
-      subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
+      subject.perform
     end
 
     it 'removes the file' do
-      subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
+      subject.perform
       expect(MockFile.new('file.csv')).to_not exist
     end
 
@@ -31,7 +35,7 @@ describe BulkProcessor::Job::ProcessCSV do
 
       it 'removes the file' do
         begin
-          subject.perform('MockCSVProcessor', 'other=data', 'file.csv')
+          subject.perform
           expect(MockFile.new('file.csv')).to_not exist
         rescue
         end

@@ -1,9 +1,17 @@
 class BulkProcessor
   # Store configuration data set by clients
   class Config
-    attr_reader :queue_adapter
+    attr_reader :back_end, :queue_adapter
     attr_writer :file_class
-    attr_accessor :back_end, :temp_directory
+    attr_accessor :temp_directory
+
+    def back_end=(back_end)
+      require_relative "back_end/#{back_end}"
+      @back_end = back_end
+    rescue LoadError => error
+      puts error.message
+      raise ArgumentError, "Invalid back-end: #{back_end}"
+    end
 
     def queue_adapter=(adapter)
       ActiveJob::Base.queue_adapter = @queue_adapter = adapter
