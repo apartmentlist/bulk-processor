@@ -47,17 +47,25 @@ describe BulkProcessor::S3File do
   end
 
   describe '#open' do
+    let(:response) do
+      instance_double(
+        Aws::S3::Types::GetObjectOutput,
+        body: StringIO.new('test file contents')
+      )
+    end
+
+    before do
+      allow(s3_client).to receive(:get_object).with({ bucket: bucket, key: modified_key })
+        .and_return(response)
+    end
+
     it 'gets the object from the bucket with the correct key' do
-      expect(s3_client).to receive(:get_object)
-        .with({ bucket: bucket, key: modified_key }, anything)
+      expect(s3_client).to receive(:get_object).with({ bucket: bucket, key: modified_key })
+        .and_return(response)
       subject.open {}
     end
 
     it 'yields a local copy of the remote file' do
-      def s3_client.get_object(_config, opts)
-        opts[:target].write('test file contents')
-      end
-
       yielded_contents = 'deadbeef'
       subject.open do |file|
         yielded_contents = file.read
