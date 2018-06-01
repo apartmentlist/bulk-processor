@@ -1,4 +1,4 @@
-require 'aws-sdk'
+require 'aws-sdk-s3'
 
 class BulkProcessor
   # Read and write files in a pre-configured S3 bucket.
