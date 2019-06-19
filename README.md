@@ -1,4 +1,4 @@
-![Travis status for apartmentlist/bulk-processor](https://travis-ci.org/apartmentlist/bulk-processor.svg?branch=master)
+[![CircleCI](https://circleci.com/gh/apartmentlist/bulk-processor.svg?style=svg)](https://circleci.com/gh/apartmentlist/bulk-processor)
 
 
 # BulkProcessor
