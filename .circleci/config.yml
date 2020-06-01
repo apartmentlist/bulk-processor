@@ -8,6 +8,8 @@ jobs:
     steps:
       - checkout
       - run:
+          command: bundle config rubygems.pkg.github.com __GEM_USERNAME__:__GEM_PASSWORD__
+      - run:
           command: bundle install
       - run:
           command: bundle exec rake
@@ -18,6 +20,8 @@ jobs:
     working_directory: ~/bulk
     steps:
       - checkout
+      - run:
+          command: bundle config rubygems.pkg.github.com __GEM_USERNAME__:__GEM_PASSWORD__
       - run:
           command: bundle install
       - run:
