@@ -1,3 +1,7 @@
+Version 0.8.1, 2020-07-02
+-------------------------
+Adding GCP compatibility
+
 Version 0.8.0, 2018-10-09
 -------------------------
 f0259cd Update rack requirement for Rails 5 compatibility
