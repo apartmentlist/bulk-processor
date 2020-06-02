@@ -21,7 +21,7 @@ jobs:
     steps:
       - checkout
       - run:
-          command: bundle config rubygems.pkg.github.com $GEM_USERNAME:$GEM_PASSWORDg
+          command: bundle config rubygems.pkg.github.com $GEM_USERNAME:$GEM_PASSWORD
       - run:
           command: bundle install
       - run:
