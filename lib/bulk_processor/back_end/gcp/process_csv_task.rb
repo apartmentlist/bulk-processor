@@ -24,5 +24,5 @@ class BulkProcessor
   end
 end
 
-GcpManager.config.rake_map['start-bulk-processor'] = 'bulk_processor_gcp_pods:start'
+# GcpManager.config.rake_map['start-bulk-processor'] = 'bulk_processor_gcp_pods:start'
 BulkProcessor::BackEnd::Gcp::ProcessCSVTask.new.install_task
