@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class BulkProcessor
   class SplitCSV
     def initialize(processor_class, payload, key, num_chunks)
@@ -13,11 +15,11 @@ class BulkProcessor
       keys.each do |key|
         BackEnd.start(processor_class: processor_class, payload: payload, key: key)
       end
-    rescue Exception => error
-      handle_error(error)
+    rescue Exception => e
+      handle_error(e)
       raise
     ensure
-      BulkProcessor.config.file_class.new(key).delete
+      # BulkProcessor.config.file_class.new(key).delete
     end
 
     private

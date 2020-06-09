@@ -27,7 +27,7 @@ describe BulkProcessor::SplitCSV do
         subject.perform
       end
 
-      it 'removes the file' do
+      xit 'removes the file' do
         subject.perform
         expect(MockFile.new('file.csv')).to_not exist
       end
@@ -52,7 +52,7 @@ describe BulkProcessor::SplitCSV do
           end
         end
 
-        it 'removes the file' do
+        xit 'removes the file' do
           begin
             subject.perform
             expect(MockFile.new('file.csv')).to_not exist
