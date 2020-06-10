@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'active_job'
 
 require_relative 'active_job/process_csv_job'
@@ -7,10 +9,11 @@ class BulkProcessor
   module BackEnd
     # Execute jobs via ActiveJob, e.g. Resque
     class ActiveJob
-      def initialize(processor_class:, payload:, key:)
+      def initialize(processor_class:, payload:, key:, job:)
         @processor_class = processor_class.name
         @payload = PayloadSerializer.serialize(payload)
         @key = key
+        @job = job || nil
       end
 
       def start
@@ -24,7 +27,7 @@ class BulkProcessor
 
       private
 
-      attr_reader :processor_class, :payload, :key
+      attr_reader :processor_class, :payload, :key, :job
     end
   end
 end

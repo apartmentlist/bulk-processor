@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bulk_processor/back_end/dynosaur'
 
 describe BulkProcessor::BackEnd::Dynosaur do
@@ -8,7 +10,8 @@ describe BulkProcessor::BackEnd::Dynosaur do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
         payload: { 'foo' => 'bar' },
-        key: 'file.csv'
+        key: 'file.csv',
+        job: 'start-dynosaur-test'
       )
       expect(Dynosaur::Client::HerokuClient.api_key).to eq('test-api-key')
       expect(Dynosaur::Client::HerokuClient.app_name).to eq('test-app-name')
@@ -20,7 +23,8 @@ describe BulkProcessor::BackEnd::Dynosaur do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
         payload: { 'foo' => 'bar' },
-        key: 'file.csv'
+        key: 'file.csv',
+        job: nil
       )
     end
 
@@ -50,7 +54,8 @@ describe BulkProcessor::BackEnd::Dynosaur do
       BulkProcessor::BackEnd::Dynosaur.new(
         processor_class: MockCSVProcessor,
         payload: { 'foo' => 'bar' },
-        key: 'file.csv'
+        key: 'file.csv',
+        job: nil
       )
     end
 

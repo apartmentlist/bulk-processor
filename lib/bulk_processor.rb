@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bulk_processor/back_end'
 require 'bulk_processor/config'
 require 'bulk_processor/file_splitter'
@@ -25,7 +27,7 @@ class BulkProcessor
 
   attr_reader :errors
 
-  def initialize(key:, stream:, processor_class:, payload: {})
+  def initialize(key:, stream:, processor_class:, payload: {}, job: nil)
     @key = key
     @stream = stream
     @processor_class = processor_class
@@ -63,8 +65,13 @@ class BulkProcessor
   def start_backend(contents, num_processes)
     file = BulkProcessor.config.file_class.new(key)
     file.write(contents)
-    BackEnd.start(processor_class: processor_class, payload: payload, key: key,
-                  num_processes: num_processes)
+    BackEnd.start(
+      processor_class: processor_class,
+      payload: payload,
+      key: key,
+      num_processes: num_processes,
+      job: 'start-bulk-processor'
+    )
   rescue Exception
     # Clean up the file, which is treated as a lock, if we bail out of here
     # unexpectedly.

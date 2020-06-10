@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 include ActiveJob::TestHelper
 
 describe BulkProcessor do
@@ -109,7 +111,11 @@ describe BulkProcessor do
       end
 
       it 'removes the file' do
-        subject.start rescue nil
+        begin
+          subject.start
+        rescue StandardError
+          nil
+        end
         expect(MockFile.new('file.csv').exists?).to eq(false)
       end
     end
@@ -170,7 +176,7 @@ describe BulkProcessor do
     context 'sucessfully processed the file' do
       subject do
         BulkProcessor.new(key: 'file.csv', stream: stream, payload: {},
-                          processor_class: MockCSVProcessor)
+                          processor_class: MockCSVProcessor, job: 'start-bulk-process-test')
       end
 
       it 'calls #complete! on the handler' do

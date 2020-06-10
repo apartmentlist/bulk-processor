@@ -12,8 +12,13 @@ class BulkProcessor
     def perform
       splitter = FileSplitter.new(key: key, row_chunker: row_chunker)
       keys = splitter.split!
-      keys.each do |key|
-        BackEnd.start(processor_class: processor_class, payload: payload, key: key)
+      keys.each do |key, index|
+        BackEnd.start(
+          processor_class: processor_class,
+          payload: payload,
+          key: key,
+          job: "start-bulk-processor-#{index}"
+        )
       end
     rescue Exception => e
       handle_error(e)

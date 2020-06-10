@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe BulkProcessor::SplitCSV do
   describe '#perform' do
     subject do
@@ -17,11 +19,12 @@ describe BulkProcessor::SplitCSV do
 
     shared_examples_for 'a splitter' do
       it 'starts the processing on the back-end with 2 new files' do
-        %w[file_1-of-2.csv file_2-of-2.csv].each do |key|
+        %w[file_1-of-2.csv file_2-of-2.csv].each do |key, index|
           expect(BulkProcessor::BackEnd).to receive(:start).with(
             processor_class: MockCSVProcessor,
             payload: { 'other' => 'data' },
-            key: key
+            key: key,
+            job: "start-bulk-processor-#{index}"
           )
         end
         subject.perform
@@ -40,7 +43,7 @@ describe BulkProcessor::SplitCSV do
           allow(MockCSVProcessor).to receive(:handler).and_return(MockHandler)
           payload = { 'key' => 'file.csv', 'other' => 'data' }
           allow(MockHandler).to receive(:new).with(payload: payload, results: [])
-            .and_return(handler)
+                                             .and_return(handler)
           allow(BulkProcessor::BackEnd).to receive(:start).and_raise(error)
         end
 
@@ -48,7 +51,7 @@ describe BulkProcessor::SplitCSV do
           begin
             expect(handler).to receive(:fail!).with(error)
             subject.perform
-          rescue
+          rescue StandardError
           end
         end
 
@@ -56,7 +59,7 @@ describe BulkProcessor::SplitCSV do
           begin
             subject.perform
             expect(MockFile.new('file.csv')).to_not exist
-          rescue
+          rescue StandardError
           end
         end
       end

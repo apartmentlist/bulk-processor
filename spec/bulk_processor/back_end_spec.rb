@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 describe BulkProcessor::BackEnd do
   describe '.start' do
     before do
@@ -15,22 +17,31 @@ describe BulkProcessor::BackEnd do
         allow(BulkProcessor::BackEnd::ActiveJob).to receive(:new).with(
           processor_class: MockCSVProcessor,
           payload: { 'foo' => 'bar' },
-          key: 'file.csv'
+          key: 'file.csv',
+          job: 'start-active-job-test'
         ).and_return(back_end)
       end
 
       it 'starts the ActiveJob backend' do
         expect(back_end).to receive(:start)
-        BulkProcessor::BackEnd.start(processor_class: MockCSVProcessor,
-                                     payload: { 'foo' => 'bar' }, key: 'file.csv')
+        BulkProcessor::BackEnd.start(
+          processor_class: MockCSVProcessor,
+          payload: { 'foo' => 'bar' },
+          key: 'file.csv',
+          job: 'start-active-job-test'
+        )
       end
 
       context 'when num_processes is 2' do
         it 'split using the ActiveJob backend' do
           expect(back_end).to receive(:split).with(2)
-          BulkProcessor::BackEnd.start(processor_class: MockCSVProcessor,
-                                       payload: { 'foo' => 'bar' }, key: 'file.csv',
-                                       num_processes: 2)
+          BulkProcessor::BackEnd.start(
+            processor_class: MockCSVProcessor,
+            payload: { 'foo' => 'bar' },
+            key: 'file.csv',
+            num_processes: 2,
+            job: 'start-active-job-test'
+          )
         end
       end
     end
@@ -43,7 +54,8 @@ describe BulkProcessor::BackEnd do
         allow(BulkProcessor::BackEnd::Dynosaur).to receive(:new).with(
           processor_class: MockCSVProcessor,
           payload: { 'foo' => 'bar' },
-          key: 'file.csv'
+          key: 'file.csv',
+          job: 'start-dynosaur-test'
         ).and_return(back_end)
       end
 
@@ -51,16 +63,24 @@ describe BulkProcessor::BackEnd do
 
       it 'starts the Dynosaur backend' do
         expect(back_end).to receive(:start)
-        BulkProcessor::BackEnd.start(processor_class: MockCSVProcessor,
-                                     payload: { 'foo' => 'bar' }, key: 'file.csv')
+        BulkProcessor::BackEnd.start(
+          processor_class: MockCSVProcessor,
+          payload: { 'foo' => 'bar' },
+          key: 'file.csv',
+          job: 'start-dynosaur-test'
+        )
       end
 
       context 'when num_processes is 2' do
         it 'split using the ActiveJob backend' do
           expect(back_end).to receive(:split).with(2)
-          BulkProcessor::BackEnd.start(processor_class: MockCSVProcessor,
-                                       payload: { 'foo' => 'bar' }, key: 'file.csv',
-                                       num_processes: 2)
+          BulkProcessor::BackEnd.start(
+            processor_class: MockCSVProcessor,
+            payload: { 'foo' => 'bar' },
+            key: 'file.csv',
+            num_processes: 2,
+            job: 'start-dynosaur-test'
+          )
         end
       end
     end

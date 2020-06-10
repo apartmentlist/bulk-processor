@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'gcp_manager'
 require 'bulk_processor/back_end/gcp'
 
@@ -6,7 +8,8 @@ describe BulkProcessor::BackEnd::Gcp do
     BulkProcessor::BackEnd::Gcp.new(
       processor_class: MockCSVProcessor,
       payload: { 'foo' => 'bar' },
-      key: 'file.csv'
+      key: 'file.csv',
+      job: 'start-bulk-processor'
     )
   end
 
@@ -17,7 +20,7 @@ describe BulkProcessor::BackEnd::Gcp do
   it_behaves_like 'a role', 'BackEnd'
 
   describe '#start' do
-    it 'initializes a Dynosaur dyno with the correct args' do
+    it 'initializes a pod with the correct args' do
       args = ['MockCSVProcessor', 'foo=bar', 'file.csv']
 
       expect(GcpManager)
@@ -28,7 +31,7 @@ describe BulkProcessor::BackEnd::Gcp do
   end
 
   describe '#split' do
-    it 'initializes a Dynosaur dyno with the correct args' do
+    it 'initializes a pod with the correct args' do
       args = ['MockCSVProcessor', 'foo=bar', 'file.csv', '2']
 
       expect(GcpManager)
@@ -36,6 +39,5 @@ describe BulkProcessor::BackEnd::Gcp do
         .with('split-bulk-processor', args)
       gcp.split(2)
     end
-
   end
 end

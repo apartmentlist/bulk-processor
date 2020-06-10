@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'bulk_processor/back_end/active_job'
 
 describe BulkProcessor::BackEnd::ActiveJob do
@@ -8,7 +10,8 @@ describe BulkProcessor::BackEnd::ActiveJob do
       BulkProcessor::BackEnd::ActiveJob.new(
         processor_class: MockCSVProcessor,
         payload: { 'foo' => 'bar' },
-        key: 'file.csv'
+        key: 'file.csv',
+        job: nil
       )
     end
 
@@ -25,7 +28,8 @@ describe BulkProcessor::BackEnd::ActiveJob do
       BulkProcessor::BackEnd::ActiveJob.new(
         processor_class: MockCSVProcessor,
         payload: { 'foo' => 'bar' },
-        key: 'file.csv'
+        key: 'file.csv',
+        job: nil
       )
     end
 

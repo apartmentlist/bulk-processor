@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'dynosaur'
 
 require_relative 'dynosaur/tasks'
@@ -6,10 +8,11 @@ class BulkProcessor
   module BackEnd
     # Execute jobs via rake tasks that will spawn a new Heroku dyno
     class Dynosaur
-      def initialize(processor_class:, payload:, key:)
+      def initialize(processor_class:, payload:, key:, job:)
         @processor_class = processor_class.name
         @payload = PayloadSerializer.serialize(payload)
         @key = key
+        @job = job || nil
         configure_dynosaur
       end
 
