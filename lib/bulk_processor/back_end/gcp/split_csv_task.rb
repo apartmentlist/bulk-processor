@@ -25,5 +25,5 @@ class BulkProcessor
   end
 end
 
-# GcpManager.config.rake_map['split-bulk-processor'] = 'bulk_processor_gcp_pods:split'
+GcpManager.add_task('split-bulk-processor', 'rake bulk_processor_gcp_pods:split')
 BulkProcessor::BackEnd::Gcp::SplitCSVTask.new.install_task

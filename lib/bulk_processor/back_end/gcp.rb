@@ -7,9 +7,6 @@ class BulkProcessor
         @processor_class = processor_class.name
         @payload = PayloadSerializer.serialize(payload)
         @key = key
-
-        GcpManager.add_task('start-bulk-processor', 'rake bulk_processor_gcp_pods:start')
-        GcpManager.add_task('split-bulk-processor', 'rake bulk_processor_gcp_pods:split')
       end
 
       def start
