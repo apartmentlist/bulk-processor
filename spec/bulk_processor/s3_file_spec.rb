@@ -5,6 +5,12 @@ describe BulkProcessor::S3File do
   let(:bucket) { BulkProcessor.config.aws.bucket }
   let(:modified_key) { 'bulk_processor/files/1/data.txt' }
   let(:s3_client) { instance_double(Aws::S3::Client) }
+  let(:response) do
+    instance_double(
+      Aws::S3::Types::GetObjectOutput,
+      body: StringIO.new('test file contents')
+    )
+  end
 
   before do
     allow(Aws::Credentials).to receive(:new).with(
@@ -13,6 +19,8 @@ describe BulkProcessor::S3File do
     ).and_return(aws_credentials)
     allow(Aws::S3::Client).to receive(:new).with(credentials: aws_credentials)
       .and_return(s3_client)
+    allow(s3_client).to receive(:get_object).with({ bucket: bucket, key: modified_key })
+       .and_return(response)
   end
 
   describe '#write' do
@@ -47,18 +55,6 @@ describe BulkProcessor::S3File do
   end
 
   describe '#open' do
-    let(:response) do
-      instance_double(
-        Aws::S3::Types::GetObjectOutput,
-        body: StringIO.new('test file contents')
-      )
-    end
-
-    before do
-      allow(s3_client).to receive(:get_object).with({ bucket: bucket, key: modified_key })
-        .and_return(response)
-    end
-
     it 'gets the object from the bucket with the correct key' do
       expect(s3_client).to receive(:get_object).with({ bucket: bucket, key: modified_key })
         .and_return(response)
