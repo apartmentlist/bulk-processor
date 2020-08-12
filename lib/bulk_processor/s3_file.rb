@@ -38,8 +38,18 @@ class BulkProcessor
     # @param contents [String] the contents of the file to create
     # @return [String] the URL of the new file
     def write(contents)
+      retry_limit = 3
       remote_file = resource.bucket(bucket).object(key)
-      remote_file.put(body: contents)
+      begin
+        remote_file.put(body: contents)
+        client.get_object(bucket: bucket, key: key)
+      rescue Aws::S3::Errors::NoSuchKey => e
+        if retry_limit > 0
+          retry_limit -= 1
+          retry
+        end
+        raise e
+      end
       remote_file.public_url
     end
 
