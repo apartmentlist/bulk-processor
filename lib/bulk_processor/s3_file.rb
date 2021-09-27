@@ -25,11 +25,15 @@ class BulkProcessor
     #
     # @yields [File] a local copy of the remote file
     def open
-      with_temp_file do |local_file|
-        object = client.get_object(bucket: bucket, key: key)
-        local_file.write(object.body.read)
-        local_file.rewind
-        yield local_file
+      begin
+        with_temp_file do |local_file|
+          object = client.get_object(bucket: bucket, key: key)
+          local_file.write(object.body.read)
+          local_file.rewind
+          yield local_file
+        end
+      rescue Aws::S3::Errors => e
+        raise "Aws::S3::Errors: #{e}, KEY: #{key}, BUCKET: #{bucket}"
       end
     end
 
