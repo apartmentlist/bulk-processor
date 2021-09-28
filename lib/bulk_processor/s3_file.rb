@@ -33,7 +33,8 @@ class BulkProcessor
           yield local_file
         end
       rescue Aws::S3::Errors => e
-        raise "Aws::S3::Errors: #{e}, KEY: #{key}, BUCKET: #{bucket}"
+        puts "Aws::S3::Errors: #{e}, KEY: #{key}, BUCKET: #{bucket}"
+        raise
       end
     end
 
