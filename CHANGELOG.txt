@@ -1,3 +1,7 @@
+Version 0.8.5, 2020-09-29
+-------------------------
+Adding error logging for retrieving S3 file
+
 Version 0.8.3, 2020-09-04
 -------------------------
 Adding retry for writing to S3 file
