@@ -1,4 +1,4 @@
-Version 0.8.5, 2020-09-29
+Version 0.8.5, 2021-09-29
 -------------------------
 Adding error logging for retrieving S3 file
 
