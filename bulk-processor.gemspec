@@ -31,4 +31,5 @@ success or failure report
   spec.add_development_dependency 'pry-byebug', '~> 3'
   spec.add_development_dependency 'rake', '~> 10.4'
   spec.add_development_dependency 'rspec', '~> 3.3'
+  spec.add_development_dependency 'sidekiq'
 end
