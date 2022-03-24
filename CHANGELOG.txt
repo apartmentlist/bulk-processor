@@ -1,3 +1,7 @@
+Version 0.8.6, 2022-03-23
+-------------------------
+Adding sidekiq backend
+
 Version 0.8.5, 2021-09-29
 -------------------------
 Adding error logging for retrieving S3 file
