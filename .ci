@@ -49,15 +49,15 @@ spec:
   restartPolicy: Never
   containers:
   - name: ruby
-    image: ruby:2.7.6
+    image: gcr.io/alist-development/ruby:2.7.5
     imagePullPolicy: Always
     resources:
       requests:
-        memory: "2048Mi"
-        cpu: "2"
-      limits:
-        memory: "2048Mi"
-        cpu: "2"
+        memory: "1024Mi"
+        cpu: "1"
+      requests:
+        memory: "1024Mi"
+        cpu: "1"
     command:
     - "tail"
     - "-f"
