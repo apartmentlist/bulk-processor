@@ -1,0 +1,154 @@
+#!/usr/bin/env groovy
+
+// https://github.com/apartmentlist/ci-shared-library
+@Library('ci-shared-library')_
+
+// Log Rotation
+properties([
+  buildDiscarder(
+    logRotator(
+      artifactDaysToKeepStr: '',
+      artifactNumToKeepStr: '',
+      daysToKeepStr: '30',
+      numToKeepStr: '100'
+    )
+  )
+]) //properties
+
+// Generate unique slave labels
+def k8s_label = "${UUID.randomUUID().toString()}"
+
+pipeline {
+  environment {
+    APP_NAME = 'bulk-processor'
+    APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE = 'true'
+    CI = 'true'
+    CLOUDSDK_CORE_DISABLE_PROMPTS = '1'
+    GIT_COMMIT_SHORT = sh(script: "git rev-parse --short ${GIT_COMMIT}", returnStdout: true).trim()
+    GIT_MESSAGE = sh(script: "git log --format=%B -n 1 ${GIT_COMMIT}", returnStdout: true).trim()
+    GIT_USER = sh(script: "git log -1 --pretty=format:'%ae'", returnStdout: true).trim()
+    GITHUB_URL = "https://github.com"
+    LANG = "en_US.UTF-8"
+    LANGUAGE = "en_US:en"
+    LC_ALL = "en_US.UTF-8"
+    PRODUCTION_DEPLOY="false"
+    SLACK_CHANNEL = "#staging-releases"
+  } // environment
+
+  agent {
+    kubernetes {
+      label k8s_label
+      defaultContainer 'jnlp'
+      yaml """
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test
+spec:
+  restartPolicy: Never
+  containers:
+  - name: ruby
+    image: ruby:2.7.6
+    imagePullPolicy: Always
+    resources:
+      requests:
+        memory: "2048Mi"
+        cpu: "2"
+      limits:
+        memory: "2048Mi"
+        cpu: "2"
+    command:
+    - "tail"
+    - "-f"
+    - "/dev/null"
+"""
+    } // kubernetes
+  } // agent
+
+  options {
+    timestamps()
+    timeout(time: 10, unit: 'MINUTES')
+    ansiColor('xterm')
+  } // options
+
+  stages {
+    stage('Preparation') {
+      parallel {
+        stage('Slack') {
+          steps {
+            slackPreparation()
+          } // steps
+        } // stage - Slack
+        stage('Build Description') {
+          steps {
+            buildDescription()
+          }
+        }
+        stage('Bundle') {
+          steps {
+            container('ruby') {
+              sh 'gem install bundler:2.2.6 --no-post-install-message --no-document'
+              sh 'apt-get update && apt-get install --yes --no-install-recommends git gcc make'
+              sh '''
+                bundle config mirror.https://rubygems.org http://web.gemstash:9292
+                bundle config mirror.https://rubygems.org.fallback_timeout 1
+              '''
+              sh 'bundle install -j 12'
+            } // container
+          } // steps
+        } // stage - Bundle
+      } //parallel
+    } //stage - Preparation
+
+    stage('Testing') {
+      when {
+        allOf {
+          changeRequest target: 'main'
+        }
+      }
+
+      parallel {
+        stage('Run RSpec') {
+          steps {
+            container('ruby') {
+              withEnv([
+                "BUNDLE_GITHUB__COM=${BUNDLE_GITHUB__COM}",
+                "BUNDLE_GITHUB__HTTPS=${BUNDLE_GITHUB__HTTPS}"
+              ]) {
+                sh label: 'RSpec', script: 'bundle exec rake'
+              } // withEnv
+            } // container
+          } // steps
+        } // stage
+      } //parallel
+    } //stage
+
+    stage("Publish") {
+      when {
+        allOf {
+          branch "main"
+          not { changeRequest() }
+        }
+      } // when
+      parallel {
+        stage("to Github packages") {
+          steps {
+            publishRubyGemToGHP("ruby")
+          }
+        } // stage - to Github packages
+      } // parallel
+    } // stage - Publish
+  } // stages
+
+  post {
+    success {
+      slackSuccess()
+    } // success
+    failure {
+      slackFailure()
+    } // failure
+
+  } // post
+
+} // pipeline

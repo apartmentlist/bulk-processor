@@ -21,6 +21,7 @@ success or failure report
   spec.require_paths = ['lib']
   spec.required_ruby_version = '>= 2.1'
 
+  spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'aws-sdk-s3'
   spec.add_runtime_dependency 'rack'
 
