@@ -1,5 +1,5 @@
 REPO_NAME = 'bulk-processor'
-MODULE_NAME = 'bulk-processor'
+MODULE_NAME = 'bulk_processor'
 
 def adjust_module_name(str)
   str
