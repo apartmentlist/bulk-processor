@@ -28,7 +28,6 @@ success or failure report
   spec.add_development_dependency 'activejob', '~> 4'
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'dynosaur', '~> 0.3'
-  spec.add_development_dependency 'gcp-manager', github: 'apartmentlist/gcp-manager', branch: 'main'
   spec.add_development_dependency 'pry-byebug', '~> 3'
   spec.add_development_dependency 'rake', '~> 10.4'
   spec.add_development_dependency 'rspec', '~> 3.3'
