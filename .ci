@@ -32,7 +32,7 @@ pipeline {
     LANGUAGE = "en_US:en"
     LC_ALL = "en_US.UTF-8"
     PRODUCTION_DEPLOY="false"
-    SLACK_CHANNEL = "#staging-releases"
+    SLACK_CHANNEL = "#releases"
   } // environment
 
   agent {
@@ -141,12 +141,11 @@ spec:
 
   post {
     success {
-      success('alist-staging')
+      success('alist-production')
     } // success
     aborted {
-      aborted('alist-staging')
+      aborted('alist-production')
     } // aborted
-
   } // post
 
 } // pipeline
