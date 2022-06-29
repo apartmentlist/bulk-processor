@@ -44,7 +44,6 @@ class BulkProcessor
       if csv.headers.any? { |header| header.nil? || header.strip == '' }
         errors << MISSING_COLUMN_MESSAGE
       end
-
       errors.empty?
     end
 
@@ -54,7 +53,7 @@ class BulkProcessor
 
     def csv
       return @csv if instance_variable_defined?('@csv')
-      @csv = CSV.parse(stream, PARSING_OPTIONS)
+      @csv = CSV.parse(stream, **PARSING_OPTIONS)
     rescue NoMethodError => error
       if error.message == BAD_HEADERS_ERROR_MSG
         errors << MISSING_COLUMN_MESSAGE
