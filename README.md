@@ -152,6 +152,11 @@ class PetCSVProcessor < BulkProcessor::CSVProcessor
     PetRowProcessor
   end
 
+  # @return [PreProcessor] a class that implements the PreProcessor role
+  def self.pre_processor_class
+    PetPreProcessor
+  end
+
   # @return [PostProcessor] a class that implements the PostProcessor role
   def self.post_processor_class
     PetPostProcessor
@@ -203,6 +208,29 @@ class PetPostProcessor
       @results << BulkProcessor::CSVProcessor::Result.new(messages: ['Too many cats!'],
                                                           successful: false)
     end
+  end
+end
+```
+
+```ruby
+class PetPreProcessor
+  attr_reader :results
+
+  def initialize(row_processors)
+    # Assign instance variables and do any other setup
+  end
+
+  def start
+    @results = []
+    row_count = row_processors.length
+    if row_count > 2
+      @results << BulkProcessor::CSVProcessor::Result.new(messages: ['Too many rows!'], successful: false)
+    end
+  end
+
+  def self.fail_process_if_failed
+    # a class method that's used to indicate if the csv process needs to be continue with PreProcessor failed
+    true
   end
 end
 ```

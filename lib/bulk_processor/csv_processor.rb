@@ -1,5 +1,6 @@
 require_relative 'csv_processor/no_op_handler'
 require_relative 'csv_processor/no_op_post_processor'
+require_relative 'csv_processor/no_op_pre_processor'
 require_relative 'csv_processor/result'
 require_relative 'csv_processor/row_processor'
 
@@ -46,6 +47,11 @@ class BulkProcessor
       NoOpHandler
     end
 
+    # @return [PreProcessor] a class that implements the PreProcessor role
+    def self.pre_processor_class
+      NoOpPreProcessor
+    end
+
     # @return [PostProcessor] a class that implements the PostProcessor role
     def self.post_processor_class
       NoOpPostProcessor
@@ -76,12 +82,17 @@ class BulkProcessor
     # processing will halt for all remaining rows and the `#fail!` will be
     # invoked on the handler.
     def start
-      row_processors.each do |processor|
-        processor.process!
-        results << processor.result
+      pre_processes
+      if self.class.pre_processor_class.fail_process_if_failed && results.present?
+        raise StandardError, results.join(". ")
+      else
+        row_processors.each do |processor|
+          processor.process!
+          results << processor.result
+        end
+        post_processes
+        handler.complete!
       end
-      post_processes
-      handler.complete!
     rescue Exception => exception
       handler.fail!(exception)
 
@@ -108,6 +119,12 @@ class BulkProcessor
       post_processor = self.class.post_processor_class.new(row_processors)
       post_processor.start
       results.concat(post_processor.results)
+    end
+
+    def pre_processes
+      pre_processor = self.class.pre_processor_class.new(row_processors)
+      pre_processor.start
+      results.concat(pre_processor.results)
     end
   end
 end
