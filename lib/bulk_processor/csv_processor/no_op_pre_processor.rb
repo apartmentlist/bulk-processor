@@ -13,7 +13,7 @@ class BulkProcessor
       end
 
       def self.fail_process_if_failed
-        true
+        false
       end
     end
   end
