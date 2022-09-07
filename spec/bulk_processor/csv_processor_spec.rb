@@ -9,6 +9,8 @@ describe BulkProcessor::CSVProcessor do
       .and_return(MockRowProcessor)
     allow(TestCSVProcessor).to receive(:post_processor_class)
       .and_return(MockPostProcessor)
+    allow(TestCSVProcessor).to receive(:pre_processor_class)
+      .and_return(MockPreProcessor)
     allow(TestCSVProcessor).to receive(:handler_class).and_return(MockHandler)
   end
 
@@ -31,6 +33,10 @@ describe BulkProcessor::CSVProcessor do
       instance_double(BulkProcessor::Role::PostProcessor, start: true, results: [])
     end
 
+    let(:pre_processor) do
+      instance_double(BulkProcessor::Role::PreProcessor, start: true, results: [])
+    end
+
     before do
       allow(MockRowProcessor).to receive(:new)
         .with(hash_including('name' => 'Rex'), row_num: 2, payload: payload)
@@ -41,7 +47,15 @@ describe BulkProcessor::CSVProcessor do
       allow(MockPostProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])
         .and_return(post_processor)
+      allow(MockPreProcessor).to receive(:new)
+        .with([row_processor_1, row_processor_2])
+        .and_return(pre_processor)
       allow(MockHandler).to receive(:complete)
+    end
+
+    it 'pre-processes the CSV' do
+      expect(pre_processor).to receive(:start)
+      subject.start
     end
 
     it 'processes all rows' do
@@ -53,6 +67,44 @@ describe BulkProcessor::CSVProcessor do
     it 'post-processes the CSV' do
       expect(post_processor).to receive(:start)
       subject.start
+    end
+
+    context 'when pre-process failed and PreProcessor class fail_process_if_failed is true' do
+      let(:pre_processor) do
+        instance_double(BulkProcessor::Role::PreProcessor, start: true, results: ['test 1', 'test 2'])
+      end
+      let(:handler) do
+        instance_double(BulkProcessor::Role::Handler, fail!: true)
+      end
+
+      before do
+        allow(MockHandler).to receive(:new).and_return(handler)
+        allow(MockPreProcessor).to receive(:fail_process_if_failed).and_return(true)
+      end
+
+      it 'fail the process' do
+        expect(handler).to receive(:fail!).with(instance_of(StandardError))
+        subject.start
+      end
+    end
+
+    context 'when pre-process failed and PreProcessor class fail_process_if_failed is false' do
+      let(:pre_processor) do
+        instance_double(BulkProcessor::Role::PreProcessor, start: true, results: ['test 1', 'test 2'])
+      end
+      let(:handler) do
+        instance_double(BulkProcessor::Role::Handler, fail!: true, complete!: true)
+      end
+
+      before do
+        allow(MockPreProcessor).to receive(:fail_process_if_failed).and_return(false)
+        allow(MockHandler).to receive(:new).and_return(handler)
+      end
+
+      it 'fail the process' do
+        expect(handler).to receive(:complete!)
+        subject.start
+      end
     end
 
     context 'handling the results' do
