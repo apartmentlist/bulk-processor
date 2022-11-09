@@ -23,9 +23,9 @@ describe BulkProcessor::ProcessCSV do
       subject.perform
     end
 
-    it 'removes the file' do
+    it 'does not remove the file' do
       subject.perform
-      expect(MockFile.new('file.csv')).to_not exist
+      expect(MockFile.new('file.csv')).to exist
     end
 
     context 'when processing raises an error' do
