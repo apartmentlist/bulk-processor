@@ -1,3 +1,4 @@
 /Gemfile.lock
 bulk-processor-*.gem
 /tmp
+.ruby-version

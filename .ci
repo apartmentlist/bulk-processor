@@ -93,7 +93,7 @@ spec:
                   "GIT_USERNAME=${GIT_USERNAME}",
                   "GIT_TOKEN=${GIT_TOKEN}"
                 ]) {
-                  sh 'gem install bundler:2.2.6 --no-post-install-message --no-document'
+                  sh 'gem install bundler:2.2.16 --no-post-install-message --no-document'
                   sh 'bundle config set --global rubygems.pkg.github.com $GIT_USERNAME:$GIT_TOKEN'
                   sh 'bundle install -j 12'
                 } // withEnv
