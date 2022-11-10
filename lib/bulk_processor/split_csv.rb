@@ -16,8 +16,6 @@ class BulkProcessor
     rescue Exception => error
       handle_error(error)
       raise
-    ensure
-      BulkProcessor.config.file_class.new(key).delete
     end
 
     private

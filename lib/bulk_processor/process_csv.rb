@@ -13,8 +13,6 @@ class BulkProcessor
         processor = processor_class.new(csv, payload: payload.merge('key' => key))
         processor.start
       end
-    ensure
-      file.try(:delete)
     end
 
     private
