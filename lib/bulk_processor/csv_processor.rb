@@ -84,7 +84,7 @@ class BulkProcessor
     def start
       pre_processes
       if self.class.pre_processor_class.fail_process_if_failed && results.present?
-        raise StandardError, results.join(". ")
+        handler.complete!
       else
         row_processors.each do |processor|
           processor.process!
