@@ -1,3 +1,7 @@
+Version 1.1.1, 2022-11-28
+-------------------------
+Added in PreProcessor. Fixed bugs.
+
 Version 0.8.7, 2022-06-06
 -------------------------
 No functional changes. Updating build pipeline to publish to GitHub Packages.
