@@ -82,8 +82,8 @@ describe BulkProcessor::CSVProcessor do
         allow(MockPreProcessor).to receive(:fail_process_if_failed).and_return(true)
       end
 
-      it 'fail the process' do
-        expect(handler).to receive(:fail!).with(instance_of(StandardError))
+      it 'end the process' do
+        expect(handler).to receive(:complete!)
         subject.start
       end
     end
