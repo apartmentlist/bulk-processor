@@ -23,6 +23,7 @@ success or failure report
 
   spec.add_runtime_dependency 'activesupport'
   spec.add_runtime_dependency 'aws-sdk-s3'
+  spec.add_runtime_dependency 'nokogiri'
   spec.add_runtime_dependency 'rack'
 
   spec.add_development_dependency 'activejob', '~> 4'

@@ -16,7 +16,7 @@ class BulkProcessor
     #
     # @return [String] a UTF-8 encoded string
     def encoded
-      stream.read.encode(Encoding::UTF_8, ENCODING_OPTIONS)
+      stream.read.encode(Encoding::UTF_8, **ENCODING_OPTIONS)
     end
 
     private

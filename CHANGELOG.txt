@@ -1,3 +1,7 @@
+Version 1.2.0, 2023-02-02
+-------------------------
+Updated ruby build version and syntax to fit ruby 3
+
 Version 1.1.1, 2022-11-28
 -------------------------
 Added in PreProcessor. Fixed bugs.
