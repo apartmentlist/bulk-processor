@@ -54,7 +54,7 @@ describe BulkProcessor::CSVProcessor do
         .with([row_processor_1, row_processor_2])
         .and_return(post_processor)
       allow(MockCleanupProcessor).to receive(:new)
-        .with([row_processor_1, row_processor_2])
+        .with(payload)
         .and_return(cleanup_processor)
       allow(MockPreProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])
