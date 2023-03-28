@@ -52,6 +52,10 @@ class BulkProcessor
       NoOpPreProcessor
     end
 
+    def self.cleanup_processor_class
+      NoOpCleanupProcessor
+    end
+
     # @return [PostProcessor] a class that implements the PostProcessor role
     def self.post_processor_class
       NoOpPostProcessor
@@ -91,6 +95,7 @@ class BulkProcessor
           results << processor.result
         end
         post_processes
+        cleanup
         handler.complete!
       end
     rescue Exception => exception
@@ -125,6 +130,11 @@ class BulkProcessor
       pre_processor = self.class.pre_processor_class.new(row_processors)
       pre_processor.start
       results.concat(pre_processor.results)
+    end
+
+    def cleanup
+      cleanup_processor = self.class.cleanup_processor_class.new(row_processors)
+      cleanup_processor.start
     end
   end
 end
