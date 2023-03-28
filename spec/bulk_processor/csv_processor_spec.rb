@@ -9,6 +9,8 @@ describe BulkProcessor::CSVProcessor do
       .and_return(MockRowProcessor)
     allow(TestCSVProcessor).to receive(:post_processor_class)
       .and_return(MockPostProcessor)
+    allow(TestCSVProcessor).to receive(:cleanup_processor_class)
+      .and_return(MockCleanupProcessor)
     allow(TestCSVProcessor).to receive(:pre_processor_class)
       .and_return(MockPreProcessor)
     allow(TestCSVProcessor).to receive(:handler_class).and_return(MockHandler)
@@ -33,6 +35,10 @@ describe BulkProcessor::CSVProcessor do
       instance_double(BulkProcessor::Role::PostProcessor, start: true, results: [])
     end
 
+    let(:cleanup_processor) do
+      instance_double(BulkProcessor::Role::CleanupProcessor, start: true)
+    end
+
     let(:pre_processor) do
       instance_double(BulkProcessor::Role::PreProcessor, start: true, results: [])
     end
@@ -47,6 +53,9 @@ describe BulkProcessor::CSVProcessor do
       allow(MockPostProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])
         .and_return(post_processor)
+      allow(MockCleanupProcessor).to receive(:new)
+        .with(payload)
+        .and_return(cleanup_processor)
       allow(MockPreProcessor).to receive(:new)
         .with([row_processor_1, row_processor_2])
         .and_return(pre_processor)
@@ -66,6 +75,11 @@ describe BulkProcessor::CSVProcessor do
 
     it 'post-processes the CSV' do
       expect(post_processor).to receive(:start)
+      subject.start
+    end
+
+    it 'cleanup process called' do
+      expect(cleanup_processor).to receive(:start)
       subject.start
     end
 
