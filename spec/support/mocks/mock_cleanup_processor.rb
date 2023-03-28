@@ -1,5 +1,5 @@
 class MockCleanupProcessor
-  def initialize(row_processors)
+  def initialize(payload)
   end
 
   def start

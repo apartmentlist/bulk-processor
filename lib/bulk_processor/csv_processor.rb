@@ -134,7 +134,7 @@ class BulkProcessor
     end
 
     def cleanup
-      cleanup_processor = self.class.cleanup_processor_class.new(row_processors)
+      cleanup_processor = self.class.cleanup_processor_class.new(payload)
       cleanup_processor.start
     end
   end
