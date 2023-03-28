@@ -1,6 +1,6 @@
 class BulkProcessor
   class CSVProcessor
-    # A File delete object implementation of the PostProcessor role
+    # A File delete object implementation of the Cleanup role
     class FileDeleteCleanupProcessor
       def initialize(row_processors)
       end
