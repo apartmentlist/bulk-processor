@@ -9,7 +9,7 @@ class BulkProcessor
       end
 
       def start
-        BulkProcessor.config.file_class.new(payload('key')).delete
+        BulkProcessor.config.file_class.new(payload['key']).delete
       end
     end
   end
