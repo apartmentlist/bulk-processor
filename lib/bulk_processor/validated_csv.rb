@@ -44,7 +44,6 @@ class BulkProcessor
       if csv.headers.any? { |header| header.nil? || header.strip == '' }
         errors << MISSING_COLUMN_MESSAGE
       end
-
       errors.empty?
     end
 
